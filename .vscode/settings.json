@@ -1,0 +1,13 @@
+{
+    "files.exclude": {
+        "node_modules": true,
+        ".vscode": true,
+        ".next-dev": true,
+        ".next": true,
+        "public": true,
+        "README.md": true,
+        "postcss.config.js": true,
+        "pnpm-lock.yaml": true,
+        "next-env.d.ts": true
+    }
+}
