@@ -1,16 +1,8 @@
 // Import the necessary Firebase modules
-import { initializeApp, getApps } from 'firebase/app';
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut
-} from 'firebase/auth';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getAnalytics, isSupported } from 'firebase/analytics';
 
 // Your Firebase configuration object
 const firebaseConfig = {
@@ -27,7 +19,6 @@ let app;
 let auth;
 let db;
 let storage;
-let analytics;
 
 if (!getApps().length) {
   try {
@@ -36,16 +27,6 @@ if (!getApps().length) {
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
-    
-    // Initialize Analytics only in browser environment
-    if (typeof window !== 'undefined') {
-      // Check if analytics is supported before initializing
-      isSupported().then(supported => {
-        if (supported) {
-          analytics = getAnalytics(app);
-        }
-      });
-    }
   } catch (error) {
     console.error('Error initializing Firebase:', error);
   }
@@ -104,18 +85,12 @@ const signOutUser = async () => {
 };
 
 export { 
-  app,  // Changed from firebaseApp to app
+  app, 
   auth, 
   db, 
   storage, 
-  analytics,
   getCurrentUser,
   signInWithGoogle,
   setSessionCookie,
-  signOutUser,
-  // Export commonly used Firestore functions
-  collection,
-  getDocs,
-  query,
-  where
+  signOutUser
 };
