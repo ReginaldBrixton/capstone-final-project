@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "role": "admin",
+      "permissions": ["read", "write", "delete", "manage_users"]
+    },
+    {
+      "username": "supervisor",
+      "password": "super123",
+      "role": "supervisor",
+      "permissions": ["read", "write", "manage_users"]
+    },
+    {
+      "username": "user",
+      "password": "user123",
+      "role": "user",
+      "permissions": ["read"]
+    }
+  ]
+}

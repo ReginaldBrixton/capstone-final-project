@@ -7,7 +7,7 @@ import { Label } from "@/components/forms/label"
 import { Alert, AlertDescription } from "@/components/common/alert"
 import { Progress } from "@/components/layout/progress"
 import Link from "next/link"
-import { Github, Twitter, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
 
 export default function RegisterPage() {

@@ -8,6 +8,10 @@
         "README.md": true,
         "postcss.config.js": true,
         "pnpm-lock.yaml": true,
-        "next-env.d.ts": true
+        "next-env.d.ts": true,
+        "src/app/favicon.ico": true,
+        "src/app/fonts": true,
+        "src/app/globals.css": true,
+        "src/app/manifest.ts": true
     }
 }
