@@ -135,16 +135,33 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-6">
-            <div className="relative">
+            {/* <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
-            </div>
+            </div> */}
+            <p className="px-8 text-center text-sm text-muted-foreground">
+            By clicking continue, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="hover:text-brand underline underline-offset-4"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="hover:text-brand underline underline-offset-4"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            {/* <div className="mt-6 grid grid-cols-2 gap-3">
               <div>
                 <Button
                   variant="outline"
@@ -163,7 +180,7 @@ export default function RegisterPage() {
                   <span className="sr-only">Sign up with Twitter</span>
                 </Button>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <p className="mt-8 text-center text-sm text-gray-600">
