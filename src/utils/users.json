@@ -1,22 +1,45 @@
 {
   "roles": [
     {
-      "username": "admin@gmail.com",
+      "email": "admin@gmail.com",
       "password": "admin123",
       "role": "admin",
-      "permissions": ["read", "write", "delete", "manage_students", "manage_supervisors","edit"]
+      "permissions": [
+        "read",
+        "write",
+        "delete",
+        "manage_students",
+        "manage_supervisors",
+        "edit"
+      ]
     },
     {
-      "username": "supervisor@gmail.com",
+      "email": "supervisor@gmail.com",
       "password": "super123",
       "role": "supervisor",
-      "permissions": ["read", "write", "manage_students"]
+      "permissions": [
+        "read",
+        "write",
+        "manage_students"
+      ]
     },
     {
-      "username": "student@gmail.com",
+      "email": "student@gmail.com",
       "password": "student123",
       "role": "student",
-      "permissions": ["read"]
+      "permissions": [
+        "read"
+      ]
+    },
+    {
+      "email": "student1@gmail.com",
+      "password": "student123",
+      "role": "student",
+      "permissions": [
+        "read"
+      ],
+      "firstName": "Reginald",
+      "lastName": "Brixton"
     }
   ]
 }

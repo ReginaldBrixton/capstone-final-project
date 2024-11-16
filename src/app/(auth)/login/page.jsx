@@ -13,16 +13,18 @@ import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault()  
     setIsLoading(true)
     setError(null)
+    
+    console.log('Login attempt initiated:', { email, passwordLength: password.length })
     
     try {
       const response = await fetch('/api/login', {
@@ -30,19 +32,45 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await response.json()
+      console.log('Login response status:', response.status)
+      console.log('Login response data:', {
+        success: response.ok,
+        message: data.message,
+        userRole: data.user?.role
+      })
 
-      if (data.token) {
-        // Store the token in cookies
-        Cookies.set('auth_token', data.token, { expires: 1 })
-        
-        // Redirect based on role
-        router.push(`/${data.user.role}`)
-      } else {
-        setError('Invalid credentials')
+      if (!response.ok) {
+        console.error('Login failed:', {
+          status: response.status,
+          message: data.message,
+          responseOk: response.ok
+        })
+        setError(data.message || 'Login failed')
+        return
+      }
+
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(data.user))
+      
+      console.log('Redirecting user with role:', data.user.role)
+      
+      // Redirect based on role
+      switch (data.user.role) {
+        case 'admin':
+          router.push('/admin')
+          break
+        case 'supervisor':
+          router.push('/supervisor')
+          break
+        case 'student':
+          router.push('/student')
+          break
+        default:
+          router.push('/unauthorized')
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -84,8 +112,8 @@ export default function Login() {
                   type="email"
                   autoComplete="email"
                   required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>

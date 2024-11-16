@@ -7,39 +7,85 @@ import { Label } from "@/components/forms/label"
 import { Alert, AlertDescription } from "@/components/common/alert"
 import { Progress } from "@/components/layout/progress"
 import Link from "next/link"
-import { Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
+import { useRouter } from 'next/navigation'
 
-export default function RegisterPage() {
+export default function Register() {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    role: 'student',
+    firstName: '',
+    lastName: ''
+  })
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const router = useRouter()
 
   useEffect(() => {
-    const strength = password.length > 8 ? 
-      (password.match(/[A-Z]/) ? 25 : 0) + 
-      (password.match(/[a-z]/) ? 25 : 0) + 
-      (password.match(/[0-9]/) ? 25 : 0) + 
-      (password.match(/[^A-Za-z0-9]/) ? 25 : 0) : 0
+    const strength = formData.password.length > 8 ? 
+      (formData.password.match(/[A-Z]/) ? 25 : 0) + 
+      (formData.password.match(/[a-z]/) ? 25 : 0) + 
+      (formData.password.match(/[0-9]/) ? 25 : 0) + 
+      (formData.password.match(/[^A-Za-z0-9]/) ? 25 : 0) : 0
     setPasswordStrength(strength)
-  }, [password])
+  }, [formData.password])
 
-  async function onSubmit(event) {
-    event.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     setIsLoading(true)
     setError(null)
 
-    setTimeout(() => {
+    // Basic client-side validation
+    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+      setError('All fields are required')
       setIsLoading(false)
-      setError("This email is already registered. Please try another.")
-    }, 2000)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || 'Registration failed')
+        return
+      }
+
+      // Show success message (optional)
+      alert('Registration successful! Please log in.')
+      
+      // Redirect to login page
+      router.push('/login')
+    } catch (error) {
+      console.error('Registration error:', error)
+      setError('Registration failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-orange-50 to-yellow-100 flex flex-col justify-center p-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md rounded-3xl overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-teal-100 flex flex-col justify-center p-4 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <motion.div 
           className="bg-white py-8 px-4 shadow-xl rounded-3xl sm:px-10"
           initial={{ opacity: 0, y: 50 }}
@@ -52,140 +98,122 @@ export default function RegisterPage() {
               Join us and start managing your projects
             </p>
           </div>
+
           {error && (
             <Alert variant="destructive" className="mb-6 rounded-2xl">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <form className="space-y-6" onSubmit={onSubmit}>
-            <div>
-              <Label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </Label>
-              <div className="mt-1">
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  autoComplete="name"
                   required
+                  value={formData.firstName}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </Label>
-              <div className="mt-1 relative">
+              <div>
+                <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</Label>
                 <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="lastName"
+                  name="lastName"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                  value={formData.lastName}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </Label>
-              <div className="mt-1">
+              <Label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</Label>
+              <div className="relative">
                 <Input
                   id="password"
                   name="password"
-                  type="password"
-                  autoComplete="new-password"
+                  type={showPassword ? "text" : "password"}
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
-              </div>
-              <div className="mt-2">
-                <Progress value={passwordStrength} className="h-1 rounded-full" />
-                <p className="text-xs text-gray-600 mt-1">
-                  Password strength: {passwordStrength === 100 ? 'Strong' : passwordStrength >= 50 ? 'Medium' : 'Weak'}
-                </p>
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+                <div className="mt-2">
+                  <Progress value={passwordStrength} className="h-1 rounded-full" />
+                  <p className="text-xs text-gray-600 mt-1">
+                    Password strength: {passwordStrength === 100 ? 'Strong' : passwordStrength >= 50 ? 'Medium' : 'Weak'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-2xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                    Creating account...
-                  </>
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-2xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                  Creating account...
+                </>
+              ) : (
+                'Sign up'
+              )}
+            </Button>
           </form>
 
           <div className="mt-6">
-            {/* <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div> */}
             <p className="px-8 text-center text-sm text-muted-foreground">
-            By clicking continue, you agree to our{" "}
-            <Link
-              href="/terms"
-              className="hover:text-brand underline underline-offset-4"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="hover:text-brand underline underline-offset-4"
-            >
-              Privacy Policy
-            </Link>
-            .
-          </p>
-
-            {/* <div className="mt-6 grid grid-cols-2 gap-3">
-              <div>
-                <Button
-                  variant="outline"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-2xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <Github className="h-5 w-5 text-gray-700" />
-                  <span className="sr-only">Sign up with GitHub</span>
-                </Button>
-              </div>
-              <div>
-                <Button
-                  variant="outline"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-2xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <Twitter className="h-5 w-5 text-blue-400" />
-                  <span className="sr-only">Sign up with Twitter</span>
-                </Button>
-              </div>
-            </div> */}
+              By clicking continue, you agree to our{" "}
+              <Link
+                href="/terms"
+                className="hover:text-brand underline underline-offset-4"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="hover:text-brand underline underline-offset-4"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </p>
           </div>
 
           <p className="mt-8 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-teal-600 hover:text-teal-500">
+            <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign in
             </Link>
           </p>
