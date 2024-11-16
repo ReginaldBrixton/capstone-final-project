@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import users from '@/utils/users.json';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import path from 'path';
+
+// Read users data at module level
+const usersFilePath = path.join(process.cwd(), 'src', 'utils', 'users.json');
+const usersData = JSON.parse(readFileSync(usersFilePath, 'utf8'));
 
 export async function POST(request) {
   try {
@@ -15,7 +21,7 @@ export async function POST(request) {
     }
 
     // Find user in database
-    const user = users.roles.find(user => user.email === email);
+    const user = usersData.roles.find(user => user.email === email);
 
     // Check if user exists and password matches
     if (!user || user.password !== password) {

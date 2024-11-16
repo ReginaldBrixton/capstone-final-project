@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import LoginForm from '../../../components/form/LoginForm'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
@@ -46,10 +48,20 @@ export default function LoginPage() {
       // Handle successful login
       console.log('Login successful:', data.user)
       
-      // Here you would typically:
-      // 1. Save the user data to a global state (Redux, Context, etc.)
-      // 2. Save the authentication token if using JWT
-      // 3. Redirect to dashboard or home page
+      // Redirect based on user role
+      switch (data.user.role) {
+        case 'admin':
+          router.push('/admin')
+          break
+        case 'supervisor':
+          router.push('/supervisor')
+          break
+        case 'student':
+          router.push('/student')
+          break
+        default:
+          router.push('/')
+      }
 
     } catch (err) {
       setError(err.message)
