@@ -1,3 +1,77 @@
 {
-  "roles": []
-} 
+  "roles": [
+    {
+      "name": "Reginald Emmanuel Quansah",
+      "email": "reginald.brixton@gmail.com",
+      "password": "Ww9uDFz5gtrAz3b@", 
+      "role": "student",
+      "permissions": [
+        "view_projects",
+        "submit_work",
+        "edit_own_work",
+        "view_feedback",
+        "comment_on_projects",
+        "join_teams",
+        "access_resources",
+        "track_progress",
+        "request_help",
+        "view_deadlines",
+        "submit_revisions",
+        "download_materials"
+      ]
+    },
+    {
+      "name": "Admin User", 
+      "email": "admin@projectmanager.com",
+      "password": "Admin123!@#$",
+      "role": "admin",
+      "permissions": [
+        "view_projects",
+        "edit_projects",
+        "delete_projects",
+        "manage_users",
+        "assign_roles",
+        "view_analytics",
+        "system_settings",
+        "manage_permissions",
+        "audit_logs",
+        "backup_system",
+        "manage_integrations",
+        "configure_security",
+        "manage_billing",
+        "create_reports",
+        "manage_teams",
+        "broadcast_announcements",
+        "manage_resources",
+        "system_maintenance",
+        "manage_api_access"
+      ]
+    },
+    {
+      "name": "Supervisor User",
+      "email": "supervisor@projectmanager.com",
+      "password": "Super456!@#$", 
+      "role": "supervisor",
+      "permissions": [
+        "view_projects",
+        "edit_projects",
+        "review_work",
+        "provide_feedback",
+        "manage_students",
+        "view_analytics",
+        "create_assignments",
+        "grade_submissions",
+        "track_attendance",
+        "schedule_meetings",
+        "generate_reports",
+        "manage_deadlines",
+        "create_resources",
+        "moderate_discussions",
+        "assign_teams",
+        "export_data",
+        "send_notifications",
+        "manage_curriculum"
+      ]
+    }
+  ]
+}
