@@ -73,10 +73,12 @@ export async function POST(request) {
     await fs.writeFile(usersFilePath, JSON.stringify(usersData, null, 2))
 
     // Return success response (exclude password from response)
-    const { password, ...userWithoutPassword } = newUser
+    const userResponse = { ...newUser }
+    delete userResponse.password
+
     return NextResponse.json({
       message: 'Registration successful',
-      user: userWithoutPassword
+      user: userResponse
     })
 
   } catch (error) {
