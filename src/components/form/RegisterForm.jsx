@@ -7,7 +7,7 @@ import { Label } from "./label.tsx"
 import { Alert, AlertDescription } from "./alert"
 import { Progress } from "./progress"
 import Link from "next/link"
-import { Github, Twitter, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
 
 export default function RegisterForm({ onSubmit: onSubmitProp, className }) {

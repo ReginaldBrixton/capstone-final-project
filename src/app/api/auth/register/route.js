@@ -45,7 +45,7 @@ export async function POST(request) {
     try {
       const fileContent = await fs.readFile(usersFilePath, 'utf8')
       usersData = JSON.parse(fileContent)
-    } catch (error) {
+    } catch {
       // If file doesn't exist, we'll create it
       console.log('Users file not found, will create new one')
     }
@@ -73,7 +73,7 @@ export async function POST(request) {
     await fs.writeFile(usersFilePath, JSON.stringify(usersData, null, 2))
 
     // Return success response (exclude password from response)
-    const { password: _, ...userWithoutPassword } = newUser
+    const { password: pass, ...userWithoutPassword } = newUser
     return NextResponse.json({
       message: 'Registration successful',
       user: userWithoutPassword

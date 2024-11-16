@@ -1,4 +1,6 @@
-import Image from "next/image";
+'use client';
+
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   return (
@@ -64,7 +66,7 @@ export default function Home() {
       <footer className="border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 dark:text-gray-400">© 2024 Research Project Management. All rights reserved.</p>
+            <p className="text-gray-600 dark:text-gray-400"> 2024 Research Project Management. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Privacy Policy</a>
               <a href="/terms" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Terms of Service</a>

@@ -145,9 +145,9 @@ const LoginForm = ({
             </div>
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <p className="mt-8 text-center text-sm text-gray-500">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="text-blue-600 hover:underline">
               Sign up
             </Link>
           </p>
