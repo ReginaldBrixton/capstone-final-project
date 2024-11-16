@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from "./button.tsx"
-import { Input } from "./input.tsx"
-import { Label } from "./label.tsx"
-import { Alert, AlertDescription } from "./alert"
+import { Button } from "./button.jsx"
+import { Input } from "./input.jsx"
+import { Label } from "./label.jsx"
+import { Alert, AlertDescription } from "./alert.jsx"
 import { Progress } from "./progress"
 import Link from "next/link"
 import { Loader2 } from 'lucide-react'
