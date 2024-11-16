@@ -26,14 +26,31 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
+      }
+
+      // Handle successful login
+      console.log('Login successful:', data.user)
       
-      console.log('Form submitted with:', formData)
-      
-      // Simulating an error for demonstration
-      throw new Error("Invalid email or password. Please try again.")
-      
+      // Here you would typically:
+      // 1. Save the user data to a global state (Redux, Context, etc.)
+      // 2. Save the authentication token if using JWT
+      // 3. Redirect to dashboard or home page
+
     } catch (err) {
       setError(err.message)
     } finally {

@@ -3,7 +3,7 @@
     {
       "name": "Reginald Emmanuel Quansah",
       "email": "reginald.brixton@gmail.com",
-      "password": "Ww9uDFz5gtrAz3b@", 
+      "password": "Ww9uDFz5gtrAz3b@",
       "role": "student",
       "permissions": [
         "view_projects",
@@ -21,7 +21,7 @@
       ]
     },
     {
-      "name": "Admin User", 
+      "name": "Admin User",
       "email": "admin@projectmanager.com",
       "password": "Admin123!@#$",
       "role": "admin",
@@ -50,7 +50,7 @@
     {
       "name": "Supervisor User",
       "email": "supervisor@projectmanager.com",
-      "password": "Super456!@#$", 
+      "password": "Super456!@#$",
       "role": "supervisor",
       "permissions": [
         "view_projects",
@@ -71,6 +71,16 @@
         "export_data",
         "send_notifications",
         "manage_curriculum"
+      ]
+    },
+    {
+      "name": "Reginald Emmanuel Quansah",
+      "email": "reginald.brixtonsd@gmail.com",
+      "password": "Ww9uDFz5gtrAz3b@",
+      "role": "student",
+      "permissions": [
+        "view_projects",
+        "submit_work"
       ]
     }
   ]
