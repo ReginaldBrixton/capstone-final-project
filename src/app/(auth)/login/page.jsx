@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import LoginForm from '../../../components/form/LoginForm'
+import LoginForm from '../../../components/auth/LoginForm'
 
 export default function LoginPage() {
   const router = useRouter()

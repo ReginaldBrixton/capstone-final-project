@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from "./button.jsx"
-import { Input } from "./input.jsx"
-import { Label } from "./label.jsx"
-import { Alert, AlertDescription } from "./alert.jsx"
-import { Progress } from "./progress"
+import { Button } from "../form/button.jsx"
+import { Input } from "../form/input.jsx"
+import { Label } from "../form/label.jsx"
+import { Alert, AlertDescription } from "../form/alert.jsx"
+import { Progress } from "../form/progress.jsx"
 import Link from "next/link"
 import { Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"

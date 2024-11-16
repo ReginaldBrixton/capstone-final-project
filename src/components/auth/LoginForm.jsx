@@ -1,10 +1,10 @@
 'use client'
 
-import { Button } from "./button.jsx"
-import { Input } from "./input.jsx"
-import { Label } from "./label.jsx"
-import { Checkbox } from "./checkbox.jsx"
-import { Alert, AlertDescription } from "./alert.jsx"
+import { Button } from "../form/button.jsx"
+import { Input } from "../form/input.jsx"
+import { Label } from "../form/label.jsx"
+import { Checkbox } from "../form/checkbox.jsx"
+import { Alert, AlertDescription } from "../form/alert.jsx"
 import Link from "next/link"
 import { Github, Twitter, Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
