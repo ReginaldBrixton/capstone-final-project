@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { readFileSync } from 'fs';
-import { join } from 'path';
 import path from 'path';
 
 // Read users data at module level
