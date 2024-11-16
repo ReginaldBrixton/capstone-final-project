@@ -1,52 +1,43 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@/utils/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const protectedPaths = [
+  '/admin',
+  '/supervisor',
+  '/student'
+];
 
-export function withAuth(handler) {
-  return async (req) => {
-    try {
-      const token = cookies().get('auth_token')?.value;
-      
-      if (!token) {
-        return NextResponse.redirect(new URL('/login', req.url));
-      }
+export async function middleware(request) {
+  const path = request.nextUrl.pathname;
 
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded;
-      
-      return handler(req);
-    } catch (error) {
-      return NextResponse.redirect(new URL('/login', req.url));
+  // Check if the path is protected
+  if (protectedPaths.some(prefix => path.startsWith(prefix))) {
+    const token = request.cookies.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
-  };
+
+    const userData = verifyToken(token);
+    
+    if (!userData) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Check if user has access to the specific route
+    const routeRole = path.split('/')[1]; // Gets 'admin', 'supervisor', or 'student'
+    if (userData.role !== routeRole) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
-export function checkPermission(requiredPermissions) {
-  return async (req) => {
-    try {
-      const token = cookies().get('auth_token')?.value;
-      
-      if (!token) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const userPermissions = decoded.permissions || [];
-
-      const hasPermission = requiredPermissions.every(permission => 
-        userPermissions.includes(permission)
-      );
-
-      if (!hasPermission) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
-
-      req.user = decoded;
-      return NextResponse.next();
-    } catch (error) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  };
-}
+export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/supervisor/:path*',
+    '/student/:path*',
+  ]
+};

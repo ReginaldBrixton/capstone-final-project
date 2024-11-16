@@ -32,6 +32,13 @@ declare namespace __next_route_internal_types__ {
     | `/`
     | `/login`
     | `/register`
+    | `/api/admin`
+    | `/api/supervisor`
+    | `/api/student`
+    | `/admin`
+    | `/supervisor`
+    | `/student`
+    | `/unauthorized`
   type DynamicRoutes<T extends string = string> = never
 
   type RouteImpl<T> = 

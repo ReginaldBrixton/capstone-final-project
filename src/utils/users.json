@@ -1,21 +1,21 @@
 {
-  "users": [
+  "roles": [
     {
-      "username": "admin",
+      "username": "admin@gmail.com",
       "password": "admin123",
       "role": "admin",
-      "permissions": ["read", "write", "delete", "manage_users"]
+      "permissions": ["read", "write", "delete", "manage_students", "manage_supervisors","edit"]
     },
     {
-      "username": "supervisor",
+      "username": "supervisor@gmail.com",
       "password": "super123",
       "role": "supervisor",
-      "permissions": ["read", "write", "manage_users"]
+      "permissions": ["read", "write", "manage_students"]
     },
     {
-      "username": "user",
-      "password": "user123",
-      "role": "user",
+      "username": "student@gmail.com",
+      "password": "student123",
+      "role": "student",
       "permissions": ["read"]
     }
   ]

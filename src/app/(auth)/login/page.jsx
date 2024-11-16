@@ -9,22 +9,47 @@ import { Alert, AlertDescription } from "@/components/common/alert"
 import Link from "next/link"
 import { Github, Twitter, Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
+import { useRouter } from 'next/navigation'
+import Cookies from 'js-cookie'
 
-export default function LoginPage() {
+export default function Login() {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  async function onSubmit(event) {
-    event.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     setIsLoading(true)
     setError(null)
+    
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
 
-    // Simulate API call
-    setTimeout(() => {
+      const data = await response.json()
+
+      if (data.token) {
+        // Store the token in cookies
+        Cookies.set('auth_token', data.token, { expires: 1 })
+        
+        // Redirect based on role
+        router.push(`/${data.user.role}`)
+      } else {
+        setError('Invalid credentials')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('Login failed. Please try again.')
+    } finally {
       setIsLoading(false)
-      // Simulating an error for demonstration
-      setError("Invalid email or password. Please try again.")
-    }, 2000)
+    }
   }
 
   return (
@@ -47,7 +72,7 @@ export default function LoginPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <form className="space-y-6" onSubmit={onSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -59,11 +84,13 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
-
+      
             <div>
               <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -75,6 +102,8 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>

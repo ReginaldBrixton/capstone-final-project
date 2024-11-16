@@ -40,6 +40,7 @@
     "firebase": "^11.0.2",
     "flowbite-react": "^0.10.2",
     "framer-motion": "^12.0.0-alpha.1",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.456.0",
     "next": "15.0.3",
