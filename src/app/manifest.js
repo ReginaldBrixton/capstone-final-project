@@ -1,6 +1,5 @@
-import type { MetadataRoute } from 'next'
-
-export default function manifest(): MetadataRoute.Manifest {
+// Next.js Manifest Configuration
+export default function manifest() {
   return {
     name: 'Capstone Project System',
     short_name: 'Capstone Project System',
@@ -21,5 +20,5 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-  }
+  };
 }
