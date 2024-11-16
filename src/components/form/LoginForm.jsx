@@ -1,22 +1,22 @@
 'use client'
 
-import { Button } from "@/components/form/button"
-import { Input } from "@/components/form/input"
-import { Label } from "@/components/form/label"
-import { Checkbox } from "@/components/form/checkbox"
-import { Alert, AlertDescription } from "@/components/form/alert"
+import { Button } from "./button.tsx"
+import { Input } from "./input.tsx"
+import { Label } from "./label.tsx"
+import { Checkbox } from "./checkbox.tsx"
+import { Alert, AlertDescription } from "./alert"
 import Link from "next/link"
 import { Github, Twitter, Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
 
-export default function LoginForm({ 
+const LoginForm = ({ 
   formData, 
   isLoading, 
   error, 
   onInputChange, 
   onSubmit,
   onSocialLogin 
-}) {
+}) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-teal-100 flex flex-col justify-center p-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -156,3 +156,5 @@ export default function LoginForm({
     </div>
   )
 }
+
+export default LoginForm

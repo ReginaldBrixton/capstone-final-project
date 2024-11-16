@@ -1,6 +1,6 @@
 'use client'
 
-import RegisterForm from '@/components/form/register-form'
+import RegisterForm from '../../../components/form/RegisterForm'
 
 export default function RegisterPage() {
   async function onSubmit(event) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import LoginForm from '@/components/form/login-form'
+import LoginForm from '../../../components/form/LoginForm'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
