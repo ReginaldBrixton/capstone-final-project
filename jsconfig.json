@@ -1,13 +1,7 @@
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@app/*": ["./src/app/*"],
-      "@api/*": ["./src/app/api/*"],
-      "@auth/*": ["./src/app/(auth)/*"],
-      "@lib/*": ["./src/lib/*"]
+      "@/*": ["./src/*"]
     },
     "moduleResolution": "node",
     "baseUrl": ".",
