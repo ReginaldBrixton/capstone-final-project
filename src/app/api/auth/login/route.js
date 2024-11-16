@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 
 // Read users data at module level
-const usersFilePath = path.join(process.cwd(), 'src', 'utils', 'users.json');
+const usersFilePath = path.join(process.cwd(), 'src/utils/users.json');
 const usersData = JSON.parse(readFileSync(usersFilePath, 'utf8'));
 
 export async function POST(request) {
