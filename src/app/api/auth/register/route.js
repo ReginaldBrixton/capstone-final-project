@@ -18,6 +18,8 @@ function getAuthErrorMessage(errorCode) {
   }
 }
 
+// 
+
 export async function POST(request) {
   let createdUser = null;
 
