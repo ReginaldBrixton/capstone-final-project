@@ -8,7 +8,7 @@ import {
   PhoneAuthProvider,
   RecaptchaVerifier,
   signInWithPhoneNumber,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword as firebaseCreateUser
 } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
@@ -87,6 +87,17 @@ export const signInWithEmailPassword = async (email, password) => {
     return result.user;
   } catch (error) {
     console.error('Error signing in with email/password:', error);
+    throw new Error(getAuthErrorMessage(error));
+  }
+};
+
+// Email/Password Sign Up
+export const createUserWithEmailAndPassword = async (email, password) => {
+  try {
+    const result = await firebaseCreateUser(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error('Error creating user with email/password:', error);
     throw new Error(getAuthErrorMessage(error));
   }
 };

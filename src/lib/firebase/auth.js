@@ -4,7 +4,8 @@ import {
   signInWithPhone,
   verifyPhoneCode,
   signOutUser,
-  auth
+  auth,
+  createUserWithEmailAndPassword
 } from './config';
 
 export {
@@ -13,5 +14,6 @@ export {
   signInWithPhone,
   verifyPhoneCode,
   signOutUser,
-  auth
+  auth,
+  createUserWithEmailAndPassword
 };
