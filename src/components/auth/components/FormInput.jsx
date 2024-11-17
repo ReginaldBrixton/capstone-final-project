@@ -33,7 +33,7 @@ export function FormInput({
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
-            <div className="relative">
+            <div className="space-y-1 relative">
                 <input
                     id={name}
                     name={name}
@@ -65,7 +65,7 @@ export function FormInput({
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className={`
-              absolute right-3 top-1/2 -translate-y-1/2 p-1.5
+              absolute right-2 top-1/2 -translate-y-1/2 p-1 pb-4
               text-gray-500 hover:text-gray-700 
               dark:text-gray-400 dark:hover:text-gray-300
               transition-all duration-200 ease-in-out

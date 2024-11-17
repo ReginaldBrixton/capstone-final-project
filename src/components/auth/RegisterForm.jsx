@@ -39,22 +39,38 @@ export default function RegisterForm() {
   const validateField = (name, value) => {
     switch (name) {
       case 'name':
-        return value.trim().length < 2 ? 'Name must be at least 2 characters long' : ''
+        return value.trim().length < 2 ? {
+          message: 'Name must be at least 2 characters long',
+          type: 'error'
+        } : null
       case 'email':
-        return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Please enter a valid email address' : ''
+        return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? {
+          message: 'Please enter a valid email address',
+          type: 'error'
+        } : null
       case 'password':
-        if (passwordStrength < 80) return 'Password is not strong enough'
+        if (passwordStrength < 80) {
+          return {
+  
+          }
+        }
         if (formData.confirmPassword && value !== formData.confirmPassword) {
           setFormErrors(prev => ({
             ...prev,
-            confirmPassword: 'Passwords do not match'
+            confirmPassword: {
+              message: 'Passwords do not match',
+              type: 'error'
+            }
           }))
         }
-        return ''
+        return null
       case 'confirmPassword':
-        return value !== formData.password ? 'Passwords do not match' : ''
+        return value !== formData.password ? {
+          message: 'Passwords do not match',
+          type: 'error'
+        } : null
       default:
-        return ''
+        return null
     }
   }
 
@@ -87,7 +103,10 @@ export default function RegisterForm() {
 
     // Additional password match validation
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match'
+      errors.confirmPassword = {
+        message: 'Passwords do not match',
+        type: 'error'
+      }
     }
 
     setFormErrors(errors)
@@ -119,7 +138,7 @@ export default function RegisterForm() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm"
+              className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[13px]"
             >
               {error}
             </motion.div>
@@ -132,7 +151,8 @@ export default function RegisterForm() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            error={formErrors.name}
+            error={formErrors.name?.message}
+            errorType={formErrors.name?.type}
             disabled={isLoading || isSubmitting}
             required
           />
@@ -143,34 +163,37 @@ export default function RegisterForm() {
             type="email"
             value={formData.email}
             onChange={handleInputChange}
-            error={formErrors.email}
+            error={formErrors.email?.message}
+            errorType={formErrors.email?.type}
             disabled={isLoading || isSubmitting}
             required
           />
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <FormInput
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleInputChange}
-              error={formErrors.password}
+              error={formErrors.password?.message}
+              errorType={formErrors.password?.type}
               disabled={isLoading || isSubmitting}
               required
             />
             
-            <PasswordStrengthIndicator strength={passwordStrength} />
+            {formData.password && <PasswordStrengthIndicator strength={passwordStrength} />}
             {formData.password && <PasswordRequirements password={formData.password} />}
           </div>
 
           <FormInput
             label="Confirm Password"
             name="confirmPassword"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={formData.confirmPassword}
             onChange={handleInputChange}
-            error={formErrors.confirmPassword}
+            error={formErrors.confirmPassword?.message}
+            errorType={formErrors.confirmPassword?.type}
             disabled={isLoading || isSubmitting}
             required
           />
