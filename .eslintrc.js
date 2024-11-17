@@ -7,6 +7,14 @@ module.exports = {
   rules: {
     'no-unused-vars': 'warn',
     'no-unused-expressions': 'warn',
-    'react/no-unescaped-entities': 'off'
+    'react/no-unescaped-entities': 'off',
+    'react/prop-types': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'no-undef': 'warn'
+  },
+  settings: {
+    react: {
+      version: 'detect'
+    }
   }
 }
