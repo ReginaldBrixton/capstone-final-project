@@ -10,7 +10,7 @@ import { SocialAuthButtons } from './components/SocialAuthButtons'
 import { FormDivider } from './components/FormDivider'
 import { PasswordStrengthIndicator } from './components/PasswordStrengthIndicator'
 import { PasswordRequirements } from './components/PasswordRequirements'
-import { useAuth } from '@/hooks/useAuth.js'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function RegisterForm() {
   const router = useRouter()
