@@ -9,6 +9,12 @@ import { Progress } from "../form/progress.jsx"
 import Link from "next/link"
 import { Loader2 } from 'lucide-react'
 import { motion } from "framer-motion"
+import {
+  signInWithEmailPassword,
+  signInWithPhone,
+  verifyPhoneCode,
+  signInWithGoogle
+} from '../../lib/firebase/auth';
 
 export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
   const [isLoading, setIsLoading] = useState(false)
@@ -29,25 +35,51 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
 
   async function handleSubmit(event) {
     event.preventDefault()
+    if (isLoading) return // Prevent multiple submissions
+    
     setIsLoading(true)
     setError(null)
 
-    // Collect form data
-    const formData = new FormData(event.target)
-    const userData = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      password: formData.get('password')
-    }
-
     try {
-      await onSubmitProp(userData)
+      // Collect form data
+      const formData = new FormData(event.target)
+      const userData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        password: formData.get('password')
+      }
+
+      const success = await onSubmitProp(userData)
+      if (!success) {
+        setIsLoading(false)
+      }
     } catch (err) {
       setError(err.message)
-    } finally {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleRegister = async () => {
+    try {
+      const user = await signInWithGoogle();
+      // Handle successful registration
+      if (user) {
+        // Create additional user data in your database if needed
+        await onSubmit({
+          name: user.displayName,
+          email: user.email,
+          // Add any additional fields
+        });
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handlePhoneRegister = async () => {
+    // Similar to login phone verification flow
+    // After successful verification, create user profile
+  };
 
   return (
     <motion.div 
@@ -62,12 +94,14 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
           Join us and start managing your projects
         </p>
       </div>
+
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <form className="space-y-6" onSubmit={handleSubmit}>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <Label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Full Name
@@ -80,6 +114,7 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
               autoComplete="name"
               required
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -96,6 +131,7 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
               autoComplete="email"
               required
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -114,12 +150,13 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter a strong password"
-              className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 sm:text-sm pr-10
+              className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 pr-10
                 ${password.length > 0 ? 
                   passwordStrength === 100 ? 'border-green-500 focus:border-green-500 focus:ring-green-500' :
                   passwordStrength >= 50 ? 'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500' :
                   'border-red-500 focus:border-red-500 focus:ring-red-500'
                 : 'border-gray-300 focus:border-teal-500 focus:ring-teal-500'}`}
+              disabled={isLoading}
             />
             <button
               type="button"
