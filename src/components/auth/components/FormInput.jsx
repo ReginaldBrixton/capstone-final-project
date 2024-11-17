@@ -18,6 +18,14 @@ export function FormInput({
     const [showTooltip, setShowTooltip] = useState(false);
     const isPassword = type === 'password';
 
+    // Extract error message from error object if it exists
+    const errorMessage = error?.message || error;
+    const errorType = error?.type;
+
+    // Remove error object from props to avoid spreading it to DOM
+    const inputProps = { ...props };
+    delete inputProps.errorType;
+
     return (
         <div className="space-y-2">
             {label && (
@@ -62,8 +70,8 @@ export function FormInput({
                           'border-gray-200 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500'}
                         ${className}
                     `}
-                    placeholder={props.placeholder || `Enter your ${label?.toLowerCase()}`}
-                    {...props}
+                    placeholder={inputProps.placeholder || `Enter your ${label?.toLowerCase()}`}
+                    {...inputProps}
                     aria-invalid={error ? "true" : "false"}
                     aria-describedby={error ? `${name}-error` : undefined}
                 />
@@ -110,7 +118,7 @@ export function FormInput({
                                     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>{error}</span>
+                                    <span>{errorMessage}</span>
                                 </div>
                             </div>
                         </motion.div>
