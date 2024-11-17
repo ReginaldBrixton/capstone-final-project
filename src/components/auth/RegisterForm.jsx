@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -10,7 +10,7 @@ import { SocialAuthButtons } from './components/SocialAuthButtons'
 import { FormDivider } from './components/FormDivider'
 import { PasswordStrengthIndicator } from './components/PasswordStrengthIndicator'
 import { PasswordRequirements } from './components/PasswordRequirements'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function RegisterForm() {
   const router = useRouter()

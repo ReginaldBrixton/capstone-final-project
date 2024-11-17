@@ -5,7 +5,6 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
-  PhoneAuthProvider,
   RecaptchaVerifier,
   signInWithPhoneNumber,
   createUserWithEmailAndPassword as firebaseCreateUser

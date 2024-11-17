@@ -5,7 +5,7 @@ import * as React from "react"
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
-const actionTypes = {
+const ACTIONS = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
   DISMISS_TOAST: "DISMISS_TOAST",
@@ -19,7 +19,7 @@ function genId() {
   return count.toString();
 }
 
-const toastTimeouts = new Map()
+const toastTimeouts = new globalThis.Map()
 
 const addToRemoveQueue = (toastId) => {
   if (toastTimeouts.has(toastId)) {
@@ -39,20 +39,20 @@ const addToRemoveQueue = (toastId) => {
 
 export const reducer = (state, action) => {
   switch (action.type) {
-    case "ADD_TOAST":
+    case ACTIONS.ADD_TOAST:
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
       };
 
-    case "UPDATE_TOAST":
+    case ACTIONS.UPDATE_TOAST:
       return {
         ...state,
         toasts: state.toasts.map((t) =>
           t.id === action.toast.id ? { ...t, ...action.toast } : t),
       };
 
-    case "DISMISS_TOAST": {
+    case ACTIONS.DISMISS_TOAST: {
       const { toastId } = action
 
       // ! Side effects ! - This could be extracted into a dismissToast() action,
@@ -76,7 +76,7 @@ export const reducer = (state, action) => {
             : t),
       };
     }
-    case "REMOVE_TOAST":
+    case ACTIONS.REMOVE_TOAST:
       if (action.toastId === undefined) {
         return {
           ...state,
@@ -108,13 +108,13 @@ function toast({
 
   const update = (props) =>
     dispatch({
-      type: "UPDATE_TOAST",
+      type: ACTIONS.UPDATE_TOAST,
       toast: { ...props, id },
     })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  const dismiss = () => dispatch({ type: ACTIONS.DISMISS_TOAST, toastId: id })
 
   dispatch({
-    type: "ADD_TOAST",
+    type: ACTIONS.ADD_TOAST,
     toast: {
       ...props,
       id,
@@ -148,7 +148,7 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss: (toastId) => dispatch({ type: ACTIONS.DISMISS_TOAST, toastId }),
   };
 }
 

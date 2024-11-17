@@ -58,12 +58,8 @@ export function FormInput({
                         block w-full rounded-lg border px-4 py-3 text-sm
                         transition-all duration-200 ease-in-out
                         ${disabled ? 'bg-gray-50 cursor-not-allowed opacity-75' : 'bg-white dark:bg-gray-800'}
-                        ${error
-                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                            : 'border-gray-300 hover:border-gray-400 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-gray-600 dark:hover:border-gray-500'
-                        }
-                        ${isFocused ? 'ring-4 ring-opacity-50' : ''}
-                        dark:text-white dark:placeholder-gray-400
+                        ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 
+                          'border-gray-200 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500'}
                         ${className}
                     `}
                     placeholder={props.placeholder || `Enter your ${label?.toLowerCase()}`}

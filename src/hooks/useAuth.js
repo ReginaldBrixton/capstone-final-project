@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import {
   signInWithEmailPassword,
   signInWithGoogle,
-  signInWithPhone,
-  verifyPhoneCode,
   createUserWithEmailAndPassword,
 } from '../lib/firebase/auth'
 
