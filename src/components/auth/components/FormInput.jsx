@@ -1,5 +1,7 @@
+import React from 'react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 
 export function FormInput({
     label,
@@ -127,4 +129,22 @@ export function FormInput({
             </div>
         </div>
     );
+}
+
+FormInput.propTypes = {
+    label: PropTypes.string,
+    name: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    value: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    error: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+            message: PropTypes.string,
+            type: PropTypes.string
+        })
+    ]),
+    disabled: PropTypes.bool,
+    required: PropTypes.bool,
+    className: PropTypes.string
 }
