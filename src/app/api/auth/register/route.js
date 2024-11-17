@@ -1,91 +1,128 @@
-import { NextResponse } from 'next/server'
-import fs from 'fs/promises'
-import path from 'path'
+import { auth, db } from '../../../../lib/firebase/config';
+import { doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, deleteUser } from 'firebase/auth';
+
+// Helper function to get user-friendly error messages
+function getAuthErrorMessage(errorCode) {
+  switch (errorCode) {
+    case 'auth/email-already-in-use':
+      return 'This email is already registered. Please try logging in or use a different email.';
+    case 'auth/invalid-email':
+      return 'The email address is not valid.';
+    case 'auth/operation-not-allowed':
+      return 'Email/password accounts are not enabled. Please contact support.';
+    case 'auth/weak-password':
+      return 'The password is too weak. Please use a stronger password.';
+    default:
+      return `Registration error: ${errorCode}`;
+  }
+}
 
 export async function POST(request) {
+  let createdUser = null;
+
   try {
-    const body = await request.json()
-    const { name, email, password } = body
+    const body = await request.json();
+    const { name, email, password, phoneNumber, authMethod } = body;
 
-    // Basic validation
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { message: 'Name, email and password are required' },
-        { status: 400 }
-      )
+    if (!authMethod) {
+      throw new Error('Authentication method is required');
     }
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { message: 'Invalid email format' },
-        { status: 400 }
-      )
-    }
-
-    // Password strength validation
-    if (
-      password.length < 8 ||
-      !/[A-Z]/.test(password) ||
-      !/[a-z]/.test(password) ||
-      !/[0-9]/.test(password) ||
-      !/[^A-Za-z0-9]/.test(password)
-    ) {
-      return NextResponse.json(
-        { message: 'Password does not meet strength requirements' },
-        { status: 400 }
-      )
-    }
-
-    // Read existing users
-    const usersFilePath = path.join(process.cwd(), 'src/utils/users.json')
-    let usersData = { roles: [] }
-    
     try {
-      const fileContent = await fs.readFile(usersFilePath, 'utf8')
-      usersData = JSON.parse(fileContent)
-    } catch {
-      // If file doesn't exist, we'll create it
-      console.log('Users file not found, will create new one')
+      switch (authMethod) {
+        case 'email':
+          if (!email || !password) {
+            throw new Error('Email and password are required for email registration');
+          }
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          createdUser = userCredential.user;
+          break;
+        case 'phone':
+          if (!phoneNumber) {
+            throw new Error('Phone number is required for phone registration');
+          }
+          createdUser = request.user;
+          break;
+        case 'google':
+          createdUser = request.user;
+          break;
+        default:
+          throw new Error(`Unsupported authentication method: ${authMethod}`);
+      }
+    } catch (authError) {
+      console.error('Authentication error:', authError);
+      throw new Error(getAuthErrorMessage(authError.code));
     }
 
-    // Check if email already exists
-    if (usersData.roles.some(user => user.email === email)) {
-      return NextResponse.json(
-        { message: 'Email already registered' },
-        { status: 409 }
-      )
+    if (!createdUser) {
+      throw new Error('User creation failed');
     }
 
-    // Add new user
-    const newUser = {
-      name,
-      email,
-      password, // In production, hash the password before storing
-      role: 'student',
-      permissions: ['view_projects', 'submit_work']
+    try {
+      // Create user profile in Firestore
+      const userProfile = {
+        name: name || '',
+        email: email || createdUser.email || '',
+        role: 'student',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        uid: createdUser.uid
+      };
+
+      if (phoneNumber || createdUser.phoneNumber) {
+        userProfile.phoneNumber = phoneNumber || createdUser.phoneNumber;
+      }
+
+      await setDoc(doc(db, 'users', createdUser.uid), userProfile);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        user: {
+          uid: createdUser.uid,
+          email: userProfile.email,
+          name: userProfile.name
+        }
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (firestoreError) {
+      console.error('Firestore error:', firestoreError);
+
+      // Clean up auth user if Firestore fails
+      if (createdUser) {
+        try {
+          await deleteUser(createdUser);
+        } catch (deleteError) {
+          console.error('Error deleting auth user:', deleteError);
+        }
+      }
+
+      throw new Error('Failed to create user profile. Please try again later.');
     }
-
-    usersData.roles.push(newUser)
-
-    // Save updated users data
-    await fs.writeFile(usersFilePath, JSON.stringify(usersData, null, 2))
-
-    // Return success response (exclude password from response)
-    const userResponse = { ...newUser }
-    delete userResponse.password
-
-    return NextResponse.json({
-      message: 'Registration successful',
-      user: userResponse
-    })
-
   } catch (error) {
-    console.error('Registration error:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Registration error:', error);
+
+    // Clean up auth user if there's an unhandled error
+    if (createdUser && error.message !== 'Failed to create user profile. Please try again later.') {
+      try {
+        await deleteUser(createdUser);
+      } catch (deleteError) {
+        console.error('Error deleting auth user during cleanup:', deleteError);
+      }
+    }
+
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message
+    }), {
+      status: 400,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
-} 
+}

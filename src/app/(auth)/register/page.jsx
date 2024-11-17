@@ -2,53 +2,69 @@
 
 import RegisterForm from '../../../components/auth/RegisterForm'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function RegisterPage() {
   const [registrationStatus, setRegistrationStatus] = useState(null)
+  const [errorMessage, setErrorMessage] = useState('')
+  const router = useRouter()
 
   async function onSubmit(userData) {
     try {
-      // Here you would typically make an API call to your backend
+      setRegistrationStatus(null)
+      setErrorMessage('')
+
+      // Add authMethod to the request
+      const requestData = {
+        ...userData,
+        authMethod: 'email' // Default to email registration
+      };
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(requestData),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Registration failed')
+        setRegistrationStatus('error')
+        setErrorMessage(data.error || 'Registration failed')
+        return false
       }
 
-      const data = await response.json()
       setRegistrationStatus('success')
       
-      // Optional: Redirect to login page or dashboard
-      // window.location.href = '/login'
+      // Delay redirect to show success message
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
       
-      return data
+      return true
     } catch (error) {
-      // For demonstration purposes, we'll throw an error if the email contains "test"
-      if (userData.email.includes('test')) {
-        throw new Error('This email is already registered. Please try another.')
-      }
-      
-      throw new Error(error.message || 'Registration failed')
+      console.error('Registration error:', error)
+      setRegistrationStatus('error')
+      setErrorMessage(error.message || 'Registration failed')
+      return false
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-orange-50 to-yellow-100 flex flex-col justify-center p-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <RegisterForm onSubmit={onSubmit} />
-        {registrationStatus === 'success' && (
-          <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md text-center">
-            Registration successful! You can now login.
-          </div>
-        )}
-      </div>
+    <div className="flex min-h-screen flex-col items-center justify-center py-12 sm:px-6 lg:px-8">
+      <RegisterForm onSubmit={onSubmit} />
+      {registrationStatus === 'success' && (
+        <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md text-center">
+          Registration successful! Redirecting to login...
+        </div>
+      )}
+      {registrationStatus === 'error' && (
+        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
+          {errorMessage || 'Registration failed. Please try again.'}
+        </div>
+      )}
     </div>
   )
 }
