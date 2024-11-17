@@ -1,143 +1,147 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Button } from "../form/button.jsx"
-import { Input } from "../form/input.jsx"
-import { Label } from "../form/label.jsx"
-import { Alert, AlertDescription } from "../form/alert.jsx"
-import { Progress } from "../form/progress.jsx"
+import { useState } from 'react'
+import { Button } from "../form/button"
+import { Input } from "../form/input"
+import { Label } from "../form/label"
 import Link from "next/link"
-import { Loader2 } from 'lucide-react'
-import { motion } from "framer-motion"
-import {
-  signInWithEmailPassword,
-  signInWithPhone,
-  verifyPhoneCode,
-  signInWithGoogle
-} from '../../lib/firebase/auth';
+import { useAuth } from "../../hooks/useAuth"
+import { motion, AnimatePresence } from "framer-motion"
+import { Progress } from "../form/progress"
+import { ErrorAlert } from "../ui/error-alert"
+import { NotificationAlert } from "../ui/notification-alert"
 
-export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
+export default function RegisterForm({ className = "" }) {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [passwordStrength, setPasswordStrength] = useState(0)
+  const [name, setName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [passwordStrength, setPasswordStrength] = useState(0)
+  const [successMessage, setSuccessMessage] = useState('')
+  const { isLoading, error, handleEmailAuth, handleGoogleAuth } = useAuth()
 
-  useEffect(() => {
-    // Simple password strength calculation
-    const strength = password.length > 8 ? 
-      (password.match(/[A-Z]/) ? 25 : 0) + 
-      (password.match(/[a-z]/) ? 25 : 0) + 
-      (password.match(/[0-9]/) ? 25 : 0) + 
-      (password.match(/[^A-Za-z0-9]/) ? 25 : 0) : 0
-    setPasswordStrength(strength)
-  }, [password])
+  const calculatePasswordStrength = (password) => {
+    let strength = 0
+    if (password.length >= 8) strength += 25
+    if (password.match(/[A-Z]/)) strength += 25
+    if (password.match(/[0-9]/)) strength += 25
+    if (password.match(/[^A-Za-z0-9]/)) strength += 25
+    return strength
+  }
 
-  async function handleSubmit(event) {
-    event.preventDefault()
-    if (isLoading) return // Prevent multiple submissions
-    
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // Collect form data
-      const formData = new FormData(event.target)
-      const userData = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        password: formData.get('password')
-      }
-
-      const success = await onSubmitProp(userData)
-      if (!success) {
-        setIsLoading(false)
-      }
-    } catch (err) {
-      setError(err.message)
-      setIsLoading(false)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const success = await handleEmailAuth(email, password, false)
+    if (success) {
+      setSuccessMessage('Registration successful! Redirecting to dashboard...')
     }
   }
 
-  const handleGoogleRegister = async () => {
-    try {
-      const user = await signInWithGoogle();
-      // Handle successful registration
-      if (user) {
-        // Create additional user data in your database if needed
-        await onSubmit({
-          name: user.displayName,
-          email: user.email,
-          // Add any additional fields
-        });
-      }
-    } catch (error) {
-      setError(error.message);
-    }
-  };
+  const dismissError = () => setError(null)
+  const dismissSuccess = () => setSuccessMessage(null)
 
-  const handlePhoneRegister = async () => {
-    // Similar to login phone verification flow
-    // After successful verification, create user profile
-  };
+  const getStrengthColor = (strength) => {
+    if (strength === 100) return 'bg-green-500'
+    if (strength >= 75) return 'bg-emerald-500'
+    if (strength >= 50) return 'bg-yellow-500'
+    if (strength >= 25) return 'bg-orange-500'
+    return 'bg-red-500'
+  }
 
   return (
     <motion.div 
-      className={`bg-white py-8 px-4 shadow-xl rounded-lg sm:px-10 ${className}`}
+      className={`bg-white dark:bg-gray-800 py-8 px-4 shadow-xl rounded-lg sm:px-10 ${className}`}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
+      <NotificationAlert 
+        message={error} 
+        type="error" 
+        onDismiss={dismissError} 
+      />
+      <NotificationAlert 
+        message={successMessage} 
+        type="success" 
+        onDismiss={dismissSuccess} 
+      />
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md mb-6">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Join us and start managing your projects
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Create your account</h2>
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          Join us and start managing your research projects
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <Label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          <Label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Full Name
           </Label>
-          <div className="mt-1">
+          <div className="mt-1 relative">
             <Input
               id="name"
-              name="name"
               type="text"
+              name="name"
               autoComplete="name"
-              required
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+              placeholder="John Doe"
+              required
             />
+            <AnimatePresence>
+              {name && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <Label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Email address
           </Label>
-          <div className="mt-1">
+          <div className="mt-1 relative">
             <Input
               id="email"
-              name="email"
               type="email"
-              autoComplete="email"
-              required
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+              placeholder="you@example.com"
+              required
             />
+            <AnimatePresence>
+              {email && email.includes('@') && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         <div>
-          <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <Label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Password
           </Label>
           <div className="mt-1 relative">
@@ -148,14 +152,12 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
               autoComplete="new-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter a strong password"
-              className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 pr-10
-                ${password.length > 0 ? 
-                  passwordStrength === 100 ? 'border-green-500 focus:border-green-500 focus:ring-green-500' :
-                  passwordStrength >= 50 ? 'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500' :
-                  'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-teal-500 focus:ring-teal-500'}`}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setPasswordStrength(calculatePasswordStrength(e.target.value))
+              }}
+              placeholder="••••••••"
+              className="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 pr-10 dark:bg-gray-700 dark:text-white sm:text-sm border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500"
               disabled={isLoading}
             />
             <button
@@ -176,107 +178,173 @@ export default function RegisterForm({ onSubmit: onSubmitProp, className }) {
               )}
             </button>
           </div>
-          {password.length > 0 && (
-            <div className="mt-2">
-              <Progress 
-                value={passwordStrength} 
-                className={`h-1 transition-colors duration-300
-                  ${passwordStrength === 100 ? 'bg-green-500' : 
-                    passwordStrength >= 50 ? 'bg-yellow-500' : 
-                    'bg-red-500'}`}
-              />
-              <div className="flex justify-between items-center mt-2">
-                <p className={`text-xs font-medium transition-colors duration-300
-                  ${passwordStrength === 100 ? 'text-green-600' : 
-                    passwordStrength >= 50 ? 'text-yellow-600' : 
-                    'text-red-600'}`}>
-                  {passwordStrength === 100 ? 'Strong password' : 
-                   passwordStrength >= 50 ? 'Moderate password' : 
-                   'Weak password'}
-                </p>
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full transition-colors duration-300 ${password.length > 8 ? 'bg-green-500' : 'bg-gray-300'}`}/>
-                    <span className="text-xs text-gray-500">8+ chars</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full transition-colors duration-300 ${password.match(/[A-Z]/) ? 'bg-green-500' : 'bg-gray-300'}`}/>
-                    <span className="text-xs text-gray-500">Uppercase</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full transition-colors duration-300 ${password.match(/[0-9]/) ? 'bg-green-500' : 'bg-gray-300'}`}/>
-                    <span className="text-xs text-gray-500">Number</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full transition-colors duration-300 ${password.match(/[^A-Za-z0-9]/) ? 'bg-green-500' : 'bg-gray-300'}`}/>
-                    <span className="text-xs text-gray-500">Symbol</span>
-                  </div>
+          <AnimatePresence>
+            {password && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-2 space-y-2"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Password strength</span>
+                  <motion.span
+                    key={passwordStrength}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`text-sm font-medium ${
+                      passwordStrength === 100 ? 'text-green-600 dark:text-green-400' :
+                      passwordStrength >= 75 ? 'text-emerald-600 dark:text-emerald-400' :
+                      passwordStrength >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                      passwordStrength >= 25 ? 'text-orange-600 dark:text-orange-400' :
+                      'text-red-600 dark:text-red-400'
+                    }`}
+                  >
+                    {passwordStrength === 100 ? 'Very Strong' :
+                     passwordStrength >= 75 ? 'Strong' :
+                     passwordStrength >= 50 ? 'Medium' :
+                     passwordStrength >= 25 ? 'Weak' :
+                     'Very Weak'}
+                  </motion.span>
                 </div>
-              </div>
-            </div>
-          )}
+                
+                <div className="h-2 relative bg-gray-200 rounded-full overflow-hidden">
+                  <motion.div
+                    className={`h-full ${getStrengthColor(passwordStrength)}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${passwordStrength}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+                </div>
+
+                <motion.ul 
+                  className="space-y-1 text-sm text-gray-600 dark:text-gray-400"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.1
+                      }
+                    }
+                  }}
+                >
+                  {[
+                    { check: password.length >= 8, text: "At least 8 characters" },
+                    { check: /[A-Z]/.test(password), text: "One uppercase letter" },
+                    { check: /[0-9]/.test(password), text: "One number" },
+                    { check: /[^A-Za-z0-9]/.test(password), text: "One special character" }
+                  ].map((requirement, index) => (
+                    <motion.li
+                      key={index}
+                      variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0 }
+                      }}
+                      className={`flex items-center gap-2 ${
+                        requirement.check ? 'text-green-600 dark:text-green-400' : ''
+                      }`}
+                    >
+                      <motion.div
+                        animate={requirement.check ? "checked" : "unchecked"}
+                        variants={{
+                          checked: { scale: 1.2 },
+                          unchecked: { scale: 1 }
+                        }}
+                      >
+                        {requirement.check ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" strokeWidth="2" />
+                          </svg>
+                        )}
+                      </motion.div>
+                      {requirement.text}
+                    </motion.li>
+                  ))}
+                </motion.ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div>
           <Button
             type="submit"
-            disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            disabled={isLoading || !email || !password || !name || passwordStrength < 50}
+            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
             {isLoading ? (
               <>
-                <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
                 Creating account...
               </>
             ) : (
-              'Create Account'
+              'Create account'
             )}
           </Button>
         </div>
-      </form>
 
-      <div className="mt-2">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              <p className="text-center text-sm text-gray-600">
-                By clicking continue, you agree to our{" "}
-                <Link
-                  href="/terms"
-                  className="font-medium text-teal-600 hover:text-teal-500 transition-colors duration-200"
-                >
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link
-                  href="/privacy" 
-                  className="font-medium text-teal-600 hover:text-teal-500 transition-colors duration-200"
-                >
-                  Privacy Policy
-                </Link>
-              </p>
-            </span>
+
+          <div className="mt-6 grid grid-cols-1 gap-3">
+            <Button
+              type="button"
+              onClick={handleGoogleAuth}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
+                />
+              </svg>
+              Sign up with Google
+            </Button>
           </div>
         </div>
-      </div>
+      </form>
 
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link 
-            href="/login" 
-            className="font-medium text-teal-600 hover:text-teal-500 inline-flex items-center transition-all duration-200 hover:translate-x-1"
-          >
-            Sign in
-            <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-        </p>
-      </div>
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        Already have an account?{' '}
+        <Link
+          href="/login"
+          className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+        >
+          Sign in
+        </Link>
+      </p>
     </motion.div>
   )
 }
