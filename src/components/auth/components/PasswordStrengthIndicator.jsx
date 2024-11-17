@@ -19,9 +19,6 @@ export function PasswordStrengthIndicator({ strength }) {
           style={{ width: `${strength}%` }}
         />
       </div>
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Password strength: {getStrengthText(strength)}
-      </p>
     </div>
   )
 } 
