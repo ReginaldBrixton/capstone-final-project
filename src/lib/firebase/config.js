@@ -4,13 +4,27 @@ import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDWx0ujCnFXdeR5vRSdFL2tMJYqiUN4sWQ",
-  authDomain: "ait-capstone-application.firebaseapp.com",
-  projectId: "ait-capstone-application",
-  storageBucket: "ait-capstone-application.appspot.com",
-  messagingSenderId: "987210855736",
-  appId: "1:987210855736:web:79c35b8872754b9bfe7dcd"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
+
+// Validate required environment variables
+const requiredEnvVars = [
+  'NEXT_PUBLIC_FIREBASE_API_KEY',
+  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  'NEXT_PUBLIC_FIREBASE_APP_ID'
+];
+
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+}
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
