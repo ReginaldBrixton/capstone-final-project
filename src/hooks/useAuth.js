@@ -29,16 +29,11 @@ export function useAuth() {
     return !!user;
   }, [toast]);
 
-  // Check for redirect result on mount and when returning to the app
+  // Check for redirect result
   useEffect(() => {
-    let mounted = true;
-
     const handleRedirectResult = async () => {
       try {
         const result = await checkRedirectResult();
-        
-        if (!mounted) return;
-
         if (result.user) {
           handleAuthResponse(result);
           router.push('/dashboard');
@@ -47,32 +42,10 @@ export function useAuth() {
         }
       } catch (err) {
         console.error('Error checking redirect result:', err);
-        if (mounted) {
-          handleAuthResponse({ 
-            error: { 
-              message: 'Failed to complete sign-in. Please try again.', 
-              level: 'error' 
-            } 
-          });
-        }
       }
     };
 
     handleRedirectResult();
-
-    // Also check when the page becomes visible again
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        handleRedirectResult();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      mounted = false;
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
   }, [router, handleAuthResponse]);
 
   const handleEmailAuth = async (email, password, isLogin = false) => {
@@ -103,8 +76,6 @@ export function useAuth() {
   };
 
   const handleGoogleAuth = useCallback(async () => {
-    if (isLoading) return false;
-
     try {
       setIsLoading(true)
       setError(null)
@@ -112,7 +83,6 @@ export function useAuth() {
       const result = await signInWithGoogle();
       handleAuthResponse(result);
       
-      // No need to redirect here as it's handled by Firebase redirect
       return true;
     } catch (err) {
       handleAuthResponse({ 
@@ -125,7 +95,7 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, handleAuthResponse]);
+  }, [handleAuthResponse]);
 
   return {
     isLoading,

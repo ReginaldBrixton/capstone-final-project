@@ -4,104 +4,47 @@ import {
   getRedirectResult as getFirebaseRedirectResult,
   signOut,
   createUserWithEmailAndPassword as firebaseCreateUser,
-  GoogleAuthProvider,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth } from './config';
 
-// Initialize Google provider with minimal scopes
+// Initialize Google provider
 const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  // Minimal scope for basic profile
-  scope: 'profile email',
-  // Disable additional Google services
-  access_type: 'online',
-  include_granted_scopes: false
-});
 
 // Keep track of auth state
 const authState = {
-  isRedirectInProgress: false,
-  lastError: null
+  isRedirectInProgress: false
 };
 
 // Helper function to get user-friendly error messages
 function getAuthErrorMessage(error) {
-  // Handle ad blocker related errors silently
-  if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-    return { message: null };
-  }
-
   switch (error?.code) {
     case 'auth/account-exists-with-different-credential':
       return { message: 'An account already exists with this email.', level: 'error' };
     case 'auth/user-disabled':
-      return { message: 'This account has been disabled. Please contact support.', level: 'error' };
+      return { message: 'This account has been disabled.', level: 'error' };
     case 'auth/user-not-found':
-      return { message: 'No account found with these credentials.', level: 'error' };
+      return { message: 'No account found.', level: 'error' };
     case 'auth/wrong-password':
-      return { message: 'Invalid password. Please try again.', level: 'error' };
-    case 'auth/network-request-failed':
-      return { message: 'Connection issue. Please check your internet.', level: 'error' };
-    case 'auth/timeout':
-      return { message: 'Request timeout. Please try again.', level: 'error' };
-    case 'auth/internal-error':
-      // Suppress internal errors that might be related to ad blockers
-      return { message: null };
+      return { message: 'Invalid password.', level: 'error' };
     default:
-      // Suppress ad blocker related errors
-      if (error?.message?.includes('blocked') || error?.message?.includes('failed to fetch')) {
-        return { message: null };
-      }
       return { 
-        message: error?.message || 'Authentication error. Please try again.',
+        message: 'Authentication error. Please try again.',
         level: 'error'
       };
   }
 }
 
-// Set persistence to SESSION to avoid storage blocking issues
-try {
-  setPersistence(auth, browserSessionPersistence).catch(console.error);
-} catch (error) {
-  console.error('Error setting persistence:', error);
-}
-
-// Google Sign In (Redirect only)
+// Google Sign In
 export async function signInWithGoogle() {
   try {
-    if (authState.isRedirectInProgress) {
-      return { 
-        user: null, 
-        error: { message: 'Sign-in already in progress...', level: 'info' }
-      };
-    }
-
-    authState.isRedirectInProgress = true;
-    
-    // Use a try-catch block for the redirect
-    try {
-      await signInWithRedirect(auth, googleProvider);
-    } catch (redirectError) {
-      // If redirect fails, try setting persistence to local and retry
-      if (redirectError?.code === 'auth/failed-precondition') {
-        await setPersistence(auth, browserLocalPersistence);
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        throw redirectError;
-      }
-    }
-    
+    await signInWithRedirect(auth, googleProvider);
     return { 
       user: null, 
-      error: { message: 'Redirecting to Google sign-in...', level: 'info' }
+      error: { message: 'Redirecting to Google...', level: 'info' }
     };
   } catch (error) {
     console.error('Google sign-in error:', error);
-    authState.isRedirectInProgress = false;
     return { 
       user: null, 
       error: getAuthErrorMessage(error)
@@ -109,16 +52,10 @@ export async function signInWithGoogle() {
   }
 }
 
-// Check redirect result with retry
+// Check redirect result
 export async function checkRedirectResult() {
-  if (!authState.isRedirectInProgress) {
-    return { user: null, error: null };
-  }
-
   try {
     const result = await getFirebaseRedirectResult(auth);
-    authState.isRedirectInProgress = false;
-    
     if (result?.user) {
       return { 
         user: result.user, 
@@ -128,24 +65,6 @@ export async function checkRedirectResult() {
     return { user: null, error: null };
   } catch (error) {
     console.error('Redirect result error:', error);
-    authState.isRedirectInProgress = false;
-
-    // If the error is related to storage/cookies, try with session persistence
-    if (error?.code === 'auth/failed-precondition') {
-      try {
-        await setPersistence(auth, browserSessionPersistence);
-        const retryResult = await getFirebaseRedirectResult(auth);
-        if (retryResult?.user) {
-          return { 
-            user: retryResult.user, 
-            error: { message: 'Successfully signed in!', level: 'success' }
-          };
-        }
-      } catch (retryError) {
-        console.error('Retry error:', retryError);
-      }
-    }
-
     return { 
       user: null, 
       error: getAuthErrorMessage(error)
