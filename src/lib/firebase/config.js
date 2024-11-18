@@ -9,7 +9,7 @@ import {
   signInWithPhoneNumber,
   createUserWithEmailAndPassword as firebaseCreateUser
 } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, enableIndexedDbPersistence } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -22,17 +22,42 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let app;
+let auth;
+let db;
 
-// Connect to emulator if configured
-if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true' && process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST) {
-  const [host, port] = process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST.split(':');
-  if (host && port) {
-    connectFirestoreEmulator(db, host, parseInt(port));
-    console.log(`Connected to Firestore emulator at ${host}:${port}`);
+if (!getApps().length) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+
+    // Enable offline persistence
+    if (typeof window !== 'undefined') {
+      enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+          console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+        } else if (err.code === 'unimplemented') {
+          console.warn('The current browser doesn\'t support persistence.');
+        }
+      });
+    }
+
+    // Use emulator if configured
+    if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true' && process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST) {
+      const [host, port] = process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST.split(':');
+      if (host && port) {
+        connectFirestoreEmulator(db, host, parseInt(port));
+        console.log(`Connected to Firestore emulator at ${host}:${port}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error initializing Firebase:', error);
   }
+} else {
+  app = getApps()[0];
+  auth = getAuth(app);
+  db = getFirestore(app);
 }
 
 // Helper function to get user-friendly error messages
