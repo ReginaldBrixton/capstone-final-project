@@ -8,7 +8,7 @@ if (!admin.apps.length) {
   try {
     const serviceAccount = JSON.parse(
       readFileSync(
-        join(process.cwd(), 'FirebaseAdminSdk.json'),
+        join(process.cwd(), 'ait-capstone-application-firebase-adminsdk-uk8z1-84e1c0f584.json'),
         'utf8'
       )
     );
