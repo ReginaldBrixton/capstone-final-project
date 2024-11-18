@@ -1,27 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword,
-  deleteUser as deleteFirebaseUser,
-  updateEmail,
-  signInWithEmailAndPassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential
-} from 'firebase/auth';
-import { 
-  collection, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  deleteDoc,
-  setDoc,
-  enableNetwork,
-  disableNetwork,
-  getDoc
-} from 'firebase/firestore';
-import { db } from '../../lib/firebase/config';
+import { useToast } from '../ui/useToast';
 import { Button } from '../ui/button';
 import {
   Table,
@@ -32,7 +12,6 @@ import {
   TableRow,
 } from '../ui/table';
 import { Input } from '../ui/input';
-import { useToast } from '../ui/useToast';
 
 export function UserManagementTable() {
   const [users, setUsers] = useState([]);
@@ -45,23 +24,19 @@ export function UserManagementTable() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
-      enableNetwork(db).then(() => {
-        toast({
-          title: 'Online',
-          description: 'Connection restored. Refreshing data...',
-        });
-        fetchUsers();
+      toast({
+        title: 'Online',
+        description: 'Connection restored. Refreshing data...',
       });
+      fetchUsers();
     };
 
     const handleOffline = () => {
       setIsOffline(true);
-      disableNetwork(db).then(() => {
-        toast({
-          title: 'Offline',
-          description: 'Working in offline mode. Some features may be limited.',
-          variant: 'destructive',
-        });
+      toast({
+        title: 'Offline',
+        description: 'Working in offline mode. Some features may be limited.',
+        variant: 'destructive',
       });
     };
 
@@ -82,21 +57,29 @@ export function UserManagementTable() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const usersCollection = collection(db, 'users');
-      const usersSnapshot = await getDocs(usersCollection);
-      const usersData = usersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setUsers(usersData);
+      const response = await fetch('/api/admin/users');
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      if (data.users) {
+        setUsers(data.users.map(user => ({
+          id: user.id,
+          email: user.email || '',
+          role: user.role || 'student',
+          disabled: user.disabled || false
+        })));
+      } else {
+        setUsers([]);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
-        title: 'Error',
-        description: isOffline 
-          ? 'Working offline. Data may not be up to date.'
-          : 'Failed to fetch users. Please check your connection.',
-        variant: 'destructive',
+        title: "Error fetching users",
+        description: error.message || "Please check your connection and try again",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -120,18 +103,18 @@ export function UserManagementTable() {
 
     setLoading(true);
     try {
-      const auth = getAuth();
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        newUser.email,
-        newUser.password
-      );
-
-      await setDoc(doc(db, 'users', user.uid), {
-        email: newUser.email,
-        role: newUser.role,
-        createdAt: new Date().toISOString()
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
       });
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       setNewUser({ email: '', password: '', role: 'student' });
       toast({
@@ -163,29 +146,20 @@ export function UserManagementTable() {
 
     setLoading(true);
     try {
-      const userRef = doc(db, 'users', userId);
-      
-      // Check if document exists
-      const docSnap = await getDoc(userRef);
-      if (!docSnap.exists()) {
-        toast({
-          title: 'Error',
-          description: 'User not found. They may have been deleted.',
-          variant: 'destructive',
-        });
-        // Refresh the user list to remove any stale data
-        fetchUsers();
-        return;
-      }
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: userId,
+          updates,
+        }),
+      });
 
-      await updateDoc(userRef, updates);
-      
-      if (updates.email) {
-        // For email updates, we need to handle authentication separately
-        toast({
-          title: 'Note',
-          description: 'Email updates require re-authentication and must be done by the user themselves.',
-        });
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       toast({
@@ -206,7 +180,7 @@ export function UserManagementTable() {
     }
   };
 
-  const deleteUser = async (userId, email) => {
+  const deleteUser = async (userId) => {
     if (isOffline) {
       toast({
         title: 'Error',
@@ -220,31 +194,19 @@ export function UserManagementTable() {
     
     setLoading(true);
     try {
-      // Check if document exists first
-      const userRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(userRef);
-      if (!docSnap.exists()) {
-        toast({
-          title: 'Error',
-          description: 'User not found. They may have been deleted already.',
-          variant: 'destructive',
-        });
-        // Refresh the user list to remove any stale data
-        fetchUsers();
-        return;
-      }
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: userId,
+        }),
+      });
 
-      // Delete from Firestore
-      await deleteDoc(userRef);
-      
-      // Delete from Authentication
-      const auth = getAuth();
-      try {
-        const { user } = await signInWithEmailAndPassword(auth, email, 'temporary-password');
-        await deleteFirebaseUser(user);
-      } catch (authError) {
-        console.error('Error deleting auth user:', authError);
-        // Continue with success message since Firestore document was deleted
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       toast({
@@ -272,6 +234,27 @@ export function UserManagementTable() {
         </div>
       )}
       
+      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 p-4 rounded-lg mb-4">
+        <h3 className="text-lg font-semibold mb-2">Administrator Information</h3>
+        <div className="space-y-2">
+          <p className="text-sm">
+            <span className="font-semibold">🔑 Authentication Management:</span> User authentication accounts must be managed through the Firebase Console for security reasons.
+          </p>
+          <p className="text-sm">
+            <span className="font-semibold">🗑️ User Deletion:</span> The delete action only removes user data from the database. To completely remove a user:
+          </p>
+          <ol className="list-decimal list-inside text-sm ml-4 space-y-1">
+            <li>Delete the user data here first</li>
+            <li>Go to the Firebase Console - Authentication section</li>
+            <li>Find the user by their email</li>
+            <li>Delete their authentication account</li>
+          </ol>
+          <p className="text-sm mt-2">
+            <span className="font-semibold">✉️ Email Updates:</span> Email changes require user re-authentication and should be handled by the users themselves.
+          </p>
+        </div>
+      </div>
+
       <form onSubmit={addUser} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
@@ -400,7 +383,7 @@ export function UserManagementTable() {
                         </Button>
                         <Button
                           variant="destructive"
-                          onClick={() => deleteUser(user.id, user.email)}
+                          onClick={() => deleteUser(user.id)}
                           disabled={loading}
                         >
                           {loading ? 'Deleting...' : 'Delete'}

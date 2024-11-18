@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: "Research Project Management",
-  description: "A platform for managing research projects and collaborations",
+  title: "Capstone Project Management",
+  description: "A platform for managing capstone projects and collaborations",
 };
 
 export default function RootLayout({ children }) {

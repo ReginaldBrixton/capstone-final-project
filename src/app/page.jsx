@@ -6,10 +6,10 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center justify-center gap-12 p-8">
         <div className="text-center space-y-4 max-w-3xl">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white">
-            Research Project Management
+            Capstone Project Management
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300">
-            Streamline your research workflow with our comprehensive project management solution
+            Streamline your capstone project workflow with our comprehensive management solution
           </p>
         </div>
 
@@ -21,7 +21,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Project Organization</h3>
-            <p className="text-gray-600 dark:text-gray-300">Keep your research projects organized with intuitive tools and workflows</p>
+            <p className="text-gray-600 dark:text-gray-300">Keep your capstone projects organized and on track with our intuitive management tools.</p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
@@ -31,7 +31,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Team Collaboration</h3>
-            <p className="text-gray-600 dark:text-gray-300">Work seamlessly with your research team members and external collaborators</p>
+            <p className="text-gray-600 dark:text-gray-300">Work seamlessly with your team members and advisors in real-time.</p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
@@ -41,7 +41,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Progress Tracking</h3>
-            <p className="text-gray-600 dark:text-gray-300">Monitor research progress and track milestones with detailed analytics</p>
+            <p className="text-gray-600 dark:text-gray-300">Monitor your capstone project milestones and track progress in real-time.</p>
           </div>
         </div>
 

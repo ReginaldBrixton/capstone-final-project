@@ -5,11 +5,9 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
   createUserWithEmailAndPassword as firebaseCreateUser
 } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -21,7 +19,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
+// Initialize Firebase only if it hasn't been initialized
 let app;
 let auth;
 let db;
@@ -31,28 +29,8 @@ if (!getApps().length) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
-
-    // Enable offline persistence
-    if (typeof window !== 'undefined') {
-      enableIndexedDbPersistence(db).catch((err) => {
-        if (err.code === 'failed-precondition') {
-          console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-        } else if (err.code === 'unimplemented') {
-          console.warn('The current browser doesn\'t support persistence.');
-        }
-      });
-    }
-
-    // Use emulator if configured
-    if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true' && process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST) {
-      const [host, port] = process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST.split(':');
-      if (host && port) {
-        connectFirestoreEmulator(db, host, parseInt(port));
-        console.log(`Connected to Firestore emulator at ${host}:${port}`);
-      }
-    }
   } catch (error) {
-    console.error('Error initializing Firebase:', error);
+    console.error('Firebase initialization error:', error);
   }
 } else {
   app = getApps()[0];
@@ -60,161 +38,36 @@ if (!getApps().length) {
   db = getFirestore(app);
 }
 
+// Configure Auth settings
+auth.useDeviceLanguage();
+
+// Disable automatic redirect persistence to prevent issues with ad blockers
+auth.settings.appVerificationDisabledForTesting = true;
+
 // Helper function to get user-friendly error messages
 function getAuthErrorMessage(error) {
   switch (error.code) {
-    case 'auth/invalid-phone-number':
-      return 'The phone number is invalid. Please enter a valid phone number.';
+    case 'auth/email-already-in-use':
+      return 'This email is already registered. Please try logging in or use a different email.';
+    case 'auth/invalid-email':
+      return 'The email address is not valid.';
     case 'auth/operation-not-allowed':
-      return 'Phone authentication is currently not supported in your region. Please try a different sign-in method or contact support.';
-    case 'auth/captcha-check-failed':
-      return 'reCAPTCHA verification failed. Please try again.';
-    case 'auth/quota-exceeded':
-      return 'SMS quota exceeded. Please try again later.';
-    case 'auth/user-disabled':
-      return 'This account has been disabled. Please contact support.';
-    case 'auth/invalid-verification-code':
-      return 'Invalid verification code. Please try again.';
-    case 'auth/missing-verification-code':
-      return 'Please enter the verification code sent to your phone.';
-    case 'auth/provider-already-linked':
-      return 'This phone number is already linked to an account.';
-    case 'auth/code-expired':
-      return 'The verification code has expired. Please request a new code.';
-    case 'auth/credential-already-in-use':
-      return 'This phone number is already associated with a different account.';
-    case 'auth/network-request-failed':
-      return 'Network error. Please check your internet connection and try again.';
-    case 'auth/too-many-requests':
-      return 'Too many attempts. Please try again later.';
+      return 'Email/password accounts are not enabled. Please contact support.';
+    case 'auth/weak-password':
+      return 'The password is too weak. Please use a stronger password.';
     default:
-      return error.message || 'An error occurred. Please try again.';
+      return error.message || 'An error occurred during authentication.';
   }
 }
 
-// Google Sign In
+// Initialize Google provider
 const googleProvider = new GoogleAuthProvider();
-export const signInWithGoogle = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error) {
-    console.error('Error signing in with Google:', error);
-    throw new Error(getAuthErrorMessage(error));
-  }
+
+// Export everything needed
+export { 
+  app, 
+  auth, 
+  db, 
+  googleProvider,
+  getAuthErrorMessage
 };
-
-// Email/Password Sign In
-export const signInWithEmailPassword = async (email, password) => {
-  try {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    return result.user;
-  } catch (error) {
-    console.error('Error signing in with email/password:', error);
-    throw new Error(getAuthErrorMessage(error));
-  }
-};
-
-// Email/Password Sign Up
-export const createUserWithEmailAndPassword = async (email, password) => {
-  try {
-    const result = await firebaseCreateUser(auth, email, password);
-    return result.user;
-  } catch (error) {
-    console.error('Error creating user with email/password:', error);
-    throw new Error(getAuthErrorMessage(error));
-  }
-};
-
-// Phone Authentication
-let recaptchaVerifier = null;
-export const signInWithPhone = async (phoneNumber, containerId = 'phone-recaptcha') => {
-  try {
-    // Format phone number to E.164 format
-    const formattedNumber = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-    
-    // Clean up any existing reCAPTCHA widgets
-    if (recaptchaVerifier) {
-      try {
-        await recaptchaVerifier.clear();
-      } catch (e) {
-        console.warn('Error clearing reCAPTCHA:', e);
-      }
-      recaptchaVerifier = null;
-    }
-
-    // Get the container element
-    const container = document.getElementById(containerId);
-    if (!container) {
-      throw new Error(`reCAPTCHA container '${containerId}' not found`);
-    }
-
-    // Clear the container
-    container.innerHTML = '';
-
-    // Create new reCAPTCHA verifier
-    recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-      size: 'invisible',
-      callback: () => {
-        console.log('reCAPTCHA verified');
-      },
-      'expired-callback': () => {
-        console.log('reCAPTCHA expired');
-        if (recaptchaVerifier) {
-          recaptchaVerifier.clear();
-          recaptchaVerifier = null;
-        }
-      }
-    });
-
-    // Render the reCAPTCHA widget
-    await recaptchaVerifier.render();
-
-    // Send verification code
-    const confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, recaptchaVerifier);
-    return confirmationResult;
-  } catch (error) {
-    console.error('Error signing in with phone:', error);
-    if (recaptchaVerifier) {
-      try {
-        await recaptchaVerifier.clear();
-      } catch (e) {
-        console.warn('Error clearing reCAPTCHA:', e);
-      }
-      recaptchaVerifier = null;
-    }
-    throw new Error(getAuthErrorMessage(error));
-  }
-};
-
-export const verifyPhoneCode = async (confirmationResult, code) => {
-  try {
-    const result = await confirmationResult.confirm(code);
-    return result.user;
-  } catch (error) {
-    console.error('Error verifying code:', error);
-    throw new Error(getAuthErrorMessage(error));
-  } finally {
-    // Clean up reCAPTCHA
-    if (recaptchaVerifier) {
-      try {
-        await recaptchaVerifier.clear();
-      } catch (e) {
-        console.warn('Error clearing reCAPTCHA:', e);
-      }
-      recaptchaVerifier = null;
-    }
-  }
-};
-
-// Sign Out
-export const signOutUser = async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error('Error signing out:', error);
-    throw new Error(getAuthErrorMessage(error));
-  }
-};
-
-export { auth, db };

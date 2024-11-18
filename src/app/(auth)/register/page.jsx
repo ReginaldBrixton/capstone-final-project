@@ -17,7 +17,7 @@ export default function RegisterPage() {
       // Add authMethod to the request
       const requestData = {
         ...userData,
-        authMethod: 'email' // Default to email registration
+        authMethod: userData.authMethod || 'email'
       };
 
       const response = await fetch('/api/auth/register', {
@@ -38,9 +38,12 @@ export default function RegisterPage() {
 
       setRegistrationStatus('success')
       
+      // Use the redirect path from the response
+      const redirectPath = data.redirect || '/login'
+      
       // Delay redirect to show success message
       setTimeout(() => {
-        router.push('/login')
+        router.push(redirectPath)
       }, 2000)
       
       return true
@@ -53,18 +56,24 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-12 sm:px-6 lg:px-8">
-      <RegisterForm onSubmit={onSubmit} />
-      {registrationStatus === 'success' && (
-        <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md text-center">
-          Registration successful! Redirecting to login...
-        </div>
-      )}
-      {registrationStatus === 'error' && (
-        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
-          {errorMessage || 'Registration failed. Please try again.'}
-        </div>
-      )}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <RegisterForm 
+          onSubmit={onSubmit}
+          status={registrationStatus}
+          error={errorMessage}
+        />
+        {registrationStatus === 'success' && (
+          <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md text-center">
+            Registration successful! Redirecting to login...
+          </div>
+        )}
+        {registrationStatus === 'error' && (
+          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
+            {errorMessage || 'Registration failed. Please try again.'}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
