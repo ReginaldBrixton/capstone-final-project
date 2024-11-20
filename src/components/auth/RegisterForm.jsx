@@ -11,9 +11,11 @@ import { FormDivider } from './components/FormDivider'
 import { PasswordStrengthIndicator } from './components/PasswordStrengthIndicator'
 import { PasswordRequirements } from './components/PasswordRequirements'
 import { useAuth } from '../../hooks/useAuth'
+import { useToast } from '../../components/ui/useToast'
 
 export default function RegisterForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -91,35 +93,82 @@ export default function RegisterForm() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     // Validate all fields
-    const errors = {}
+    const errors = {};
     Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key])
-      if (error) errors[key] = error
-    })
+      const error = validateField(key, formData[key]);
+      if (error) errors[key] = error;
+    });
 
     // Additional password match validation
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = {
         message: 'Passwords do not match',
         type: 'error'
-      }
+      };
     }
 
-    setFormErrors(errors)
+    setFormErrors(errors);
 
     if (Object.keys(errors).length === 0) {
-      const success = await handleEmailAuth(formData.email, formData.password, false, formData.name)
-      if (success) {
-        router.push('/dashboard')
+      try {
+        // Call handleEmailAuth with isSignIn = false for registration
+        const { success, user, redirectPath, error } = await handleEmailAuth(
+          formData.email,
+          formData.password,
+          false, // isSignIn = false for registration
+          formData.name // Pass the name for the user profile
+        );
+
+        if (success && user) {
+          // Show success toast and redirect
+          toast({
+            title: "Success",
+            description: "Registration successful! Redirecting...",
+            variant: "default",
+            duration: 3000,
+          });
+          router.push(redirectPath);
+        } else if (error) {
+          // Show error in the form
+          setFormErrors(prev => ({
+            ...prev,
+            submit: {
+              message: error,
+              type: 'error'
+            }
+          }));
+          // Show error toast
+          toast({
+            title: "Registration Failed",
+            description: error,
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        setFormErrors(prev => ({
+          ...prev,
+          submit: {
+            message: error.message || 'Registration failed',
+            type: 'error'
+          }
+        }));
+        toast({
+          title: "Error",
+          description: error.message || 'Registration failed',
+          variant: "destructive",
+          duration: 5000,
+        });
       }
     }
     
-    setIsSubmitting(false)
-  }
+    setIsSubmitting(false);
+  };
 
   return (
     <div className="w-full max-w-md mx-auto p-6">

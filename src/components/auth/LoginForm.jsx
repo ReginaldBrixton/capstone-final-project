@@ -31,16 +31,18 @@ export default function LoginForm() {
     setIsSubmitting(true);
     
     try {
-      const { success, user, redirectPath } = await handleEmailAuth(
+      const { success, user, redirectPath, error } = await handleEmailAuth(
         formData.email, 
         formData.password, 
-        true, 
-        null, 
+        true, // isSignIn = true for login
+        null, // no name needed for login
         rememberMe
       );
       
       if (success && user) {
         router.push(redirectPath);
+      } else if (error) {
+        console.error('Login error:', error);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -51,9 +53,11 @@ export default function LoginForm() {
 
   const handleGoogleClick = async () => {
     try {
-      const { success, user, redirectPath } = await handleGoogleAuth();
+      const { success, user, redirectPath, error } = await handleGoogleAuth();
       if (success && user && redirectPath) {
         router.push(redirectPath);
+      } else if (error) {
+        console.error('Google login error:', error);
       }
     } catch (error) {
       console.error('Google login error:', error);

@@ -19,9 +19,33 @@ export const signInWithEmailPassword = async (email, password) => {
     const user = userCredential.user;
     
     try {
-      // Get or create user role
-      const role = await getUserRole(user.uid, email);
+      // Get or create user role and ensure user document exists
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      let role;
       
+      if (!userDoc.exists()) {
+        // Create user document if it doesn't exist
+        const userData = {
+          role: 'student', // Default role
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          emailVerified: user.emailVerified
+        };
+        await setDoc(doc(db, 'users', user.uid), userData);
+        role = userData.role;
+      } else {
+        role = userDoc.data().role;
+        // Update last login
+        await setDoc(doc(db, 'users', user.uid), {
+          lastLoginAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+
       if (!role) {
         throw new Error('Unable to determine user role');
       }
@@ -46,24 +70,41 @@ export const signInWithEmailPassword = async (email, password) => {
 };
 
 // Email/Password Registration
-export const createUserWithEmailAndPassword = async (email, password) => {
+export const createUserWithEmailAndPassword = async (email, password, name = '') => {
   try {
+    // First create the authentication user
     const userCredential = await createUserWithEmailPasswordFirebase(auth, email, password);
-    // Create user document with default role
-    await setDoc(doc(db, 'users', userCredential.user.uid), {
-      role: 'student',
-      email: userCredential.user.email,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-    return {
-      user: { ...userCredential.user, role: 'student' },
-      error: null
-    };
+    const user = userCredential.user;
+    
+    try {
+      // Create user document with consistent schema
+      const userData = {
+        role: 'student', // Default role
+        email: user.email,
+        displayName: name || user.displayName || '',
+        photoURL: user.photoURL || '',
+        emailVerified: user.emailVerified,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString()
+      };
+      
+      await setDoc(doc(db, 'users', user.uid), userData);
+      
+      return {
+        success: true,
+        user: { ...user, role: userData.role },
+        redirectPath: '/student' // Default redirect for new users
+      };
+    } catch (error) {
+      // If Firestore document creation fails, delete the auth user
+      await user.delete();
+      throw error;
+    }
   } catch (error) {
     console.error("Registration error:", error);
     return {
-      user: null,
+      success: false,
       error: getAuthErrorMessage(error)
     };
   }
@@ -78,30 +119,49 @@ export const signInWithGoogle = async () => {
     try {
       // Try to get the user document
       const userDoc = await getDoc(doc(db, 'users', user.uid));
+      let role;
       
       if (!userDoc.exists()) {
-        // Create user document if it doesn't exist
+        // Create user document with consistent schema
         const userData = {
-          role: 'student',
+          role: 'student', // Default role
           email: user.email,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          emailVerified: user.emailVerified,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString()
         };
         await setDoc(doc(db, 'users', user.uid), userData);
+        role = userData.role;
+      } else {
+        role = userDoc.data().role;
+        // Update last login
+        await setDoc(doc(db, 'users', user.uid), {
+          lastLoginAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
       }
 
       // Get the route based on user's role
-      const redirectPath = await handleAuthRouting(user);
-      return { success: true, user, redirectPath };
+      const redirectPath = await handleAuthRouting({ ...user, role });
+      return { 
+        success: true, 
+        user: { ...user, role },
+        redirectPath 
+      };
 
     } catch (error) {
       console.error('Error handling user document:', error);
       throw error;
     }
   } catch (error) {
-    console.error("Google sign in error:", error);
-    const errorMessage = getAuthErrorMessage(error);
-    throw new Error(errorMessage);
+    console.error('Google sign in error:', error);
+    return {
+      success: false,
+      error: getAuthErrorMessage(error)
+    };
   }
 };
 
@@ -196,7 +256,11 @@ export const getUserRole = async (uid, email) => {
       role: isAdmin ? 'admin' : (isSupervisor ? 'supervisor' : 'student'),
       email: email,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      displayName: '',
+      photoURL: '',
+      emailVerified: false
     };
     
     await setDoc(doc(db, 'users', uid), userData);

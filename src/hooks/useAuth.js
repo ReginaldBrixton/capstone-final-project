@@ -113,11 +113,17 @@ export function useAuth() {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await signInWithEmailPassword(email, password);
+      let result;
+      if (isSignIn) {
+        result = await signInWithEmailPassword(email, password);
+      } else {
+        // For registration
+        result = await createUserWithEmailAndPassword(email, password, userData);
+      }
       return handleAuthResponse(result);
     } catch (error) {
       setError(error.message);
-      return { success: false, user: null, redirectPath: null };
+      return { success: false, user: null, redirectPath: null, error: error.message };
     } finally {
       setIsLoading(false);
     }

@@ -13,6 +13,15 @@ service cloud.firestore {
     function incomingData() {
       return request.resource.data;
     }
+    
+    function isValidUserData() {
+      let data = incomingData();
+      return data.keys().hasAll(['role', 'email', 'createdAt', 'updatedAt']) &&
+             data.role is string &&
+             data.email is string &&
+             data.createdAt is string &&
+             data.updatedAt is string;
+    }
 
     // Match users collection
     match /users/{userId} {
@@ -22,16 +31,24 @@ service cloud.firestore {
       // Allow create if:
       // 1. User is authenticated
       // 2. The document ID matches their auth ID
-      // 3. They're only setting allowed fields
+      // 3. The data is valid
       allow create: if isAuthenticated() 
         && isOwner(userId)
-        && incomingData().keys().hasOnly(['role', 'email', 'createdAt', 'updatedAt'])
-        && incomingData().role == 'student';
+        && isValidUserData();
       
-      // Allow update with similar restrictions
+      // Allow update if:
+      // 1. User is authenticated
+      // 2. The document ID matches their auth ID
+      // 3. Not trying to escalate privileges
       allow update: if isAuthenticated() 
         && isOwner(userId)
-        && incomingData().role == 'student';
+        && (!incomingData().diff(resource.data).affectedKeys().hasAny(['role']) || incomingData().role == resource.data.role);
+    }
+
+    // Allow admin operations
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
