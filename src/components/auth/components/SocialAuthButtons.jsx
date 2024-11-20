@@ -39,7 +39,7 @@ export function SocialAuthButtons({ onGoogleClick, onGithubClick, disabled }) {
           className="w-full h-8 px-4 flex items-center justify-center gap-3 text-[13px] font-medium rounded-lg border border-gray-200 text-gray-700 transition-all hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <GoogleIcon />
-          <span>Sign in with Google</span>
+          <span>Continue with Google</span>
         </Button>
       </div>
       
@@ -52,7 +52,7 @@ export function SocialAuthButtons({ onGoogleClick, onGithubClick, disabled }) {
           className="w-full h-8 px-4 flex items-center justify-center gap-3 text-[13px] font-medium rounded-lg border border-gray-200 text-gray-700 transition-all hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <GithubIcon />
-          <span>Sign in with GitHub</span>
+          <span>Continue with GitHub</span>
         </Button>
       </div>
     </div>

@@ -30,20 +30,36 @@ export default function LoginForm() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const success = await handleEmailAuth(
-      formData.email, 
-      formData.password, 
-      true, 
-      null, 
-      rememberMe
-    );
-    
-    if (success) {
-      router.push('/dashboard');
+    try {
+      const { success, user, redirectPath } = await handleEmailAuth(
+        formData.email, 
+        formData.password, 
+        true, 
+        null, 
+        rememberMe
+      );
+      
+      if (success && user) {
+        router.push(redirectPath);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
+
+  const handleGoogleClick = async () => {
+    try {
+      const { success, user, redirectPath } = await handleGoogleAuth();
+      if (success && user && redirectPath) {
+        router.push(redirectPath);
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-md mx-auto p-6">
@@ -122,7 +138,7 @@ export default function LoginForm() {
           <FormDivider text="Or continue with" />
           
           <SocialAuthButtons 
-            onGoogleClick={handleGoogleAuth}
+            onGoogleClick={handleGoogleClick}
             disabled={isLoading || isSubmitting}
           />
 

@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readFileSync } from 'fs';
-import path from 'path';
-
-// Read users data at module level
-const usersFilePath = path.join(process.cwd(), 'src/utils/users.json');
-const usersData = JSON.parse(readFileSync(usersFilePath, 'utf8'));
+import { auth, db } from '../../../../lib/firebase/admin';
 
 export async function POST(request) {
   try {
@@ -19,34 +14,42 @@ export async function POST(request) {
       );
     }
 
-    // Find user in database
-    const user = usersData.roles.find(user => user.email === email);
+    try {
+      // Verify the Firebase ID token
+      const userRecord = await auth.getUserByEmail(email);
+      
+      // Get additional user data from Firestore
+      const userDoc = await db.collection('users').doc(userRecord.uid).get();
+      const userData = userDoc.data();
 
-    // Check if user exists and password matches
-    if (!user || user.password !== password) {
+      if (!userData) {
+        return NextResponse.json(
+          { error: 'User profile not found' },
+          { status: 404 }
+        );
+      }
+
+      // Create safe user object
+      const safeUser = {
+        uid: userRecord.uid,
+        email: userRecord.email,
+        name: userData.name,
+        role: userData.role || 'student',
+        permissions: userData.permissions || {}
+      };
+
+      return NextResponse.json({
+        message: 'Login successful',
+        user: safeUser
+      });
+
+    } catch (authError) {
+      console.error('Authentication error:', authError);
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
-
-    // Create safe user object (without password)
-    const safeUser = {
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      permissions: user.permissions
-    };
-
-    // In a real application, you would:
-    // 1. Hash passwords (never store plain text passwords)
-    // 2. Use JWT or sessions for authentication
-    // 3. Implement proper security measures
-
-    return NextResponse.json({
-      message: 'Login successful',
-      user: safeUser
-    });
 
   } catch (error) {
     console.error('Login error:', error);

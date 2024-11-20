@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import LoginForm from '../../../components/auth/LoginForm'
+import TestUserRegistration from '../../../components/auth/components/TestUserRegistration'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -76,13 +77,24 @@ export default function LoginPage() {
   }
 
   return (
-    <LoginForm 
-      formData={formData}
-      isLoading={isLoading}
-      error={error}
-      onInputChange={handleInputChange}
-      onSubmit={onSubmit}
-      onSocialLogin={handleSocialLogin}
-    />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <LoginForm 
+          formData={formData}
+          isLoading={isLoading}
+          error={error}
+          onInputChange={handleInputChange}
+          onSubmit={onSubmit}
+          onSocialLogin={handleSocialLogin}
+        />
+        
+        {/* Add test user registration in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-8">
+            <TestUserRegistration />
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
