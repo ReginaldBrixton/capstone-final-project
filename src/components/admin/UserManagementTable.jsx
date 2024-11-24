@@ -146,6 +146,14 @@ export function UserManagementTable() {
 
     setLoading(true);
     try {
+      // Separate updates into auth updates and custom claims
+      const authUpdates = {};
+      if (updates.email) authUpdates.email = updates.email;
+      if (updates.displayName) authUpdates.displayName = updates.displayName;
+      if (updates.disabled !== undefined) authUpdates.disabled = updates.disabled;
+      if (updates.emailVerified !== undefined) authUpdates.emailVerified = updates.emailVerified;
+      if (updates.photoURL) authUpdates.photoURL = updates.photoURL;
+
       const response = await fetch('/api/admin/users', {
         method: 'PUT',
         headers: {
@@ -153,7 +161,8 @@ export function UserManagementTable() {
         },
         body: JSON.stringify({
           uid: userId,
-          updates,
+          updates: authUpdates,
+          role: updates.role // Send role separately
         }),
       });
 
@@ -224,6 +233,10 @@ export function UserManagementTable() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString();
   };
 
   return (
@@ -303,8 +316,12 @@ export function UserManagementTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Email</TableHead>
+              <TableHead>Display Name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Created At</TableHead>
+              <TableHead>Last Login</TableHead>
+              <TableHead>Email Verified</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -332,6 +349,18 @@ export function UserManagementTable() {
                   </TableCell>
                   <TableCell>
                     {editingUser?.id === user.id ? (
+                      <Input
+                        type="text"
+                        value={editingUser.displayName}
+                        onChange={(e) => setEditingUser({ ...editingUser, displayName: e.target.value })}
+                        disabled={loading}
+                      />
+                    ) : (
+                      user.displayName || 'N/A'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingUser?.id === user.id ? (
                       <select
                         className="w-full p-2 border rounded-md"
                         value={editingUser.role}
@@ -351,14 +380,20 @@ export function UserManagementTable() {
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell>{formatDate(user.lastLoginAt)}</TableCell>
+                  <TableCell>{user.emailVerified ? 'Yes' : 'No'}</TableCell>
+                  <TableCell>{user.disabled ? 'Disabled' : 'Active'}</TableCell>
                   <TableCell>
                     {editingUser?.id === user.id ? (
                       <div className="space-x-2">
                         <Button
                           onClick={() => updateUser(user.id, {
                             email: editingUser.email,
-                            role: editingUser.role
+                            displayName: editingUser.displayName,
+                            role: editingUser.role,
+                            disabled: editingUser.disabled,
+                            // Add any other fields you want to update
                           })}
                           disabled={loading}
                         >

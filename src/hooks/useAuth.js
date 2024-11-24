@@ -1,155 +1,212 @@
-'use client'
-
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useToast } from '../components/ui/useToast'
 import {
   signInWithEmailPassword,
   signInWithGoogle,
   createUserWithEmailAndPassword,
-  checkRedirectResult,
   auth,
-  getUserRole
+  getAuthErrorMessage
 } from '../lib/firebase/auth'
+import { db } from '../lib/firebase/config'
 import { onAuthStateChanged } from 'firebase/auth'
 import { getDoc, doc } from 'firebase/firestore'
+import { useToast } from '../components/ui/useToast'
 
 export function useAuth() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
   const router = useRouter()
   const { toast } = useToast()
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Track auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid))
+          if (userDoc.exists()) {
+            const userData = userDoc.data()
+            setUser({ ...user, role: userData.role })
+          } else {
+            setUser(user)
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+          setUser(user)
+        }
+      } else {
+        setUser(null)
+      }
       setLoading(false)
     })
 
     return () => unsubscribe()
   }, [])
 
-  // Handle auth state and messages
-  const handleAuthResponse = useCallback(({ success, user, redirectPath, error }) => {
-    if (error) {
-      toast({
-        title: error.level === 'success' ? 'Success' : 'Error',
-        description: error.message,
-        variant: error.level === 'success' ? 'default' : 'destructive',
-        duration: error.level === 'error' ? 5000 : 2000,
-      });
-    }
-    return { success, user, redirectPath };
-  }, [toast]);
+  const handleEmailAuth = async (email, password, name = '', isRegistration = false) => {
+    try {
+      // Validate input
+      if (!email || !password) {
+        toast({
+          title: 'Missing Information',
+          description: 'Please enter both email and password.',
+          variant: 'warning',
+          duration: 3000
+        })
+        return
+      }
 
-  // Check for redirect result
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await checkRedirectResult();
-        if (result.user) {
-          const response = handleAuthResponse(result);
-          if (response.redirectPath) {
-            router.push(response.redirectPath);
+      // Trim whitespace from email and password
+      const trimmedEmail = email.trim().toLowerCase()
+      const trimmedPassword = password.trim()
+
+      const result = isRegistration
+        ? await createUserWithEmailAndPassword(trimmedEmail, trimmedPassword, name)
+        : await signInWithEmailPassword(trimmedEmail, trimmedPassword)
+
+      if (result.success) {
+        toast({
+          title: isRegistration ? 'Welcome!' : 'Welcome back!',
+          description: isRegistration 
+            ? 'Your account has been created successfully.' 
+            : 'You have been logged in successfully.',
+          variant: 'success',
+          duration: 3000
+        })
+        
+        if (result.redirectPath) {
+          router.push(result.redirectPath)
+        }
+      } else if (result.error) {
+        const errorDetails = getAuthErrorMessage(result.error)
+        
+        toast({
+          title: errorDetails.title,
+          description: errorDetails.message,
+          variant: 'destructive',
+          duration: 5000,
+          action: errorDetails.action && {
+            label: errorDetails.action.label,
+            onClick: () => {
+              if (errorDetails.action.href) {
+                router.push(errorDetails.action.href)
+              } else if (typeof errorDetails.action.onClick === 'function') {
+                errorDetails.action.onClick()
+              }
+            }
           }
-        } else if (result.error?.message) {
-          handleAuthResponse(result);
-        }
-      } catch (err) {
-        console.error('Error checking redirect result:', err);
-        handleAuthResponse({ 
-          error: { 
-            message: err.message, 
-            level: 'error' 
-          } 
-        });
+        })
       }
-    };
-
-    handleRedirectResult();
-  }, [router, handleAuthResponse]);
-
-  const handleAuthStateChanged = async (user) => {
-    setLoading(true);
-    if (user) {
-      try {
-        // Get user role from Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const role = userDoc.exists() ? userDoc.data().role : 'student';
-        
-        // Update user state with role
-        setUser({ ...user, role });
-        
-        // Route based on role
-        switch (role) {
-          case 'admin':
-            router.push('/admin/dashboard');
-            break;
-          case 'supervisor':
-            router.push('/supervisor/dashboard');
-            break;
-          case 'student':
-            router.push('/student/dashboard');
-            break;
-          default:
-            router.push('/unauthorized');
-        }
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-        router.push('/unauthorized');
-      }
-    } else {
-      setUser(null);
-      router.push('/login');
-    }
-    setLoading(false);
-  };
-
-  // Email/Password Authentication
-  const handleEmailAuth = useCallback(async (email, password, isSignIn = true, userData = null, rememberMe = false) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      let result;
-      if (isSignIn) {
-        result = await signInWithEmailPassword(email, password);
-      } else {
-        // For registration
-        result = await createUserWithEmailAndPassword(email, password, userData);
-      }
-      return handleAuthResponse(result);
     } catch (error) {
-      setError(error.message);
-      return { success: false, user: null, redirectPath: null, error: error.message };
-    } finally {
-      setIsLoading(false);
+      console.error('Auth error:', error)
+      const errorDetails = getAuthErrorMessage(error)
+      
+      toast({
+        title: errorDetails.title,
+        description: errorDetails.message,
+        variant: 'destructive',
+        duration: 5000,
+        action: errorDetails.action && {
+          label: errorDetails.action.label,
+          onClick: () => {
+            if (errorDetails.action.href) {
+              router.push(errorDetails.action.href)
+            } else if (typeof errorDetails.action.onClick === 'function') {
+              errorDetails.action.onClick()
+            }
+          }
+        }
+      })
     }
-  }, [handleAuthResponse]);
+  }
 
-  // Google Authentication
-  const handleGoogleAuth = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const handleGoogleAuth = async () => {
     try {
-      const result = await signInWithGoogle();
-      return handleAuthResponse(result);
+      const result = await signInWithGoogle()
+      
+      if (result.success) {
+        toast({
+          title: 'Welcome!',
+          description: 'You have been logged in successfully with Google.',
+          variant: 'success',
+          duration: 3000
+        })
+        
+        if (result.redirectPath) {
+          router.push(result.redirectPath)
+        }
+      } else if (result.error) {
+        const errorDetails = getAuthErrorMessage(result.error)
+        
+        toast({
+          title: errorDetails.title,
+          description: errorDetails.message,
+          variant: 'destructive',
+          duration: 5000,
+          action: errorDetails.action && {
+            label: errorDetails.action.label,
+            onClick: () => {
+              if (errorDetails.action.href) {
+                router.push(errorDetails.action.href)
+              } else if (typeof errorDetails.action.onClick === 'function') {
+                errorDetails.action.onClick()
+              }
+            }
+          }
+        })
+      }
     } catch (error) {
-      setError(error.message);
-      return { success: false, user: null, redirectPath: null };
-    } finally {
-      setIsLoading(false);
+      console.error('Google auth error:', error)
+      const errorDetails = getAuthErrorMessage(error)
+      
+      toast({
+        title: errorDetails.title,
+        description: errorDetails.message,
+        variant: 'destructive',
+        duration: 5000,
+        action: errorDetails.action && {
+          label: errorDetails.action.label,
+          onClick: () => {
+            if (errorDetails.action.href) {
+              router.push(errorDetails.action.href)
+            } else if (typeof errorDetails.action.onClick === 'function') {
+              errorDetails.action.onClick()
+            }
+          }
+        }
+      })
     }
-  }, [handleAuthResponse]);
+  }
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut()
+      router.push('/login')
+      toast({
+        title: 'Logged out',
+        description: 'You have been successfully logged out.',
+        variant: 'default',
+        duration: 3000
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to log out. Please try again.',
+        variant: 'destructive',
+        duration: 5000,
+        action: {
+          label: 'Try Again',
+          onClick: () => handleLogout()
+        }
+      })
+    }
+  }
 
   return {
     user,
     loading,
-    isLoading,
-    error,
     handleEmailAuth,
     handleGoogleAuth,
+    handleLogout
   }
 }

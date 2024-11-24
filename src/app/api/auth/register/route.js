@@ -1,6 +1,5 @@
 import { auth, db } from '../../../../lib/firebase/admin';
 import { NextResponse } from 'next/server';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 // Helper function to get user-friendly error messages
 function getAuthErrorMessage(errorCode) {
@@ -64,9 +63,17 @@ export async function POST(request) {
     const body = await request.json();
     const { name, email, password, role = 'student' } = body;
 
+    // Input validation
     if (!email || !password) {
       return NextResponse.json(
         { error: { message: 'Email and password are required', level: 'error' } },
+        { status: 400 }
+      );
+    }
+
+    if (!name || name.trim().length < 2) {
+      return NextResponse.json(
+        { error: { message: 'Name must be at least 2 characters long', level: 'error' } },
         { status: 400 }
       );
     }
@@ -75,7 +82,7 @@ export async function POST(request) {
     const userQuery = await db.collection('users').where('email', '==', email).get();
     if (!userQuery.empty) {
       return NextResponse.json(
-        { error: 'This email is already registered. Please try logging in instead.' },
+        { error: { message: 'This email is already registered. Please try logging in instead.', level: 'error' } },
         { status: 409 }
       );
     }
@@ -91,13 +98,14 @@ export async function POST(request) {
     } catch (error) {
       console.error('Firebase Auth Error:', error);
       return NextResponse.json(
-        { error: getAuthErrorMessage(error.code) },
+        { error: { message: getAuthErrorMessage(error.code), level: 'error' } },
         { status: 400 }
       );
     }
 
     // Create user profile in Firestore
     const userProfile = {
+      uid: userRecord.uid,
       email,
       name,
       role,
@@ -110,25 +118,22 @@ export async function POST(request) {
       await db.collection('users').doc(userRecord.uid).set(userProfile);
     } catch (error) {
       // If Firestore creation fails, delete the Auth user to maintain consistency
-      await auth.deleteUser(userRecord.uid);
       console.error('Firestore Error:', error);
+      try {
+        await auth.deleteUser(userRecord.uid);
+      } catch (deleteError) {
+        console.error('Failed to cleanup Auth user after Firestore error:', deleteError);
+      }
       return NextResponse.json(
-        { error: 'Failed to create user profile. Please try again.' },
+        { error: { message: 'Failed to create user profile. Please try again.', level: 'error' } },
         { status: 500 }
       );
     }
 
-    // Store user role in Firestore
-    const db = getFirestore();
-    await setDoc(doc(db, 'users', userRecord.uid), {
-      email,
-      role,
-      createdAt: new Date().toISOString()
-    });
-
     return NextResponse.json({
       message: 'User registered successfully',
       user: {
+        uid: userRecord.uid,
         email: userRecord.email,
         name: userRecord.displayName,
         role,
@@ -140,8 +145,8 @@ export async function POST(request) {
     return NextResponse.json(
       { 
         error: { 
-          message: error.message || 'Registration failed', 
-          level: 'error' 
+          message: 'Registration failed. Please try again later.',
+          level: 'error'
         } 
       },
       { status: 500 }

@@ -24,7 +24,7 @@ export default function AdminPage() {
       
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">User Management</h2>
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 overflow-x-auto">
           <UserManagementTable />
         </div>
       </div>

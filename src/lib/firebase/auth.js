@@ -4,83 +4,88 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 
 const googleProvider = new GoogleAuthProvider();
 
-// Email/Password Sign In
-export const signInWithEmailPassword = async (email, password) => {
-  try {
-    // First authenticate the user
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    try {
-      // Get or create user role and ensure user document exists
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      let role;
-      
-      if (!userDoc.exists()) {
-        // Create user document if it doesn't exist
-        const userData = {
-          role: 'student', // Default role
-          email: user.email,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString(),
-          displayName: user.displayName || '',
-          photoURL: user.photoURL || '',
-          emailVerified: user.emailVerified
-        };
-        await setDoc(doc(db, 'users', user.uid), userData);
-        role = userData.role;
-      } else {
-        role = userDoc.data().role;
-        // Update last login
-        await setDoc(doc(db, 'users', user.uid), {
-          lastLoginAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-      }
+// Define consistent route paths
+const ROUTE_PATHS = {
+  ADMIN: '/admin',
+  SUPERVISOR: '/supervisor',
+  STUDENT: '/student',
+  LOGIN: '/login',
+  UNAUTHORIZED: '/unauthorized'
+};
 
-      if (!role) {
-        throw new Error('Unable to determine user role');
-      }
-
-      // Get the redirect path based on role
-      const redirectPath = await handleAuthRouting({ ...user, role });
-      
-      return {
-        success: true,
-        user: { ...user, role },
-        redirectPath
-      };
-      
-    } catch (error) {
-      console.error('Error handling user document:', error);
-      throw error;
-    }
-  } catch (error) {
-    console.error('Sign in error:', error);
-    throw error;
+export const getDefaultRoute = (role) => {
+  switch (role) {
+    case 'admin':
+      return ROUTE_PATHS.ADMIN;
+    case 'supervisor':
+      return ROUTE_PATHS.SUPERVISOR;
+    case 'student':
+      return ROUTE_PATHS.STUDENT;
+    default:
+      return ROUTE_PATHS.UNAUTHORIZED;
   }
 };
 
 // Email/Password Registration
 export const createUserWithEmailAndPassword = async (email, password, name = '') => {
   try {
-    // First create the authentication user
-    const userCredential = await createUserWithEmailPasswordFirebase(auth, email, password);
+    // Validate email and password
+    if (!email || !password) {
+      return {
+        success: false,
+        error: {
+          title: 'Missing Information',
+          message: 'Please provide both email and password.',
+          variant: 'warning',
+          duration: 4000
+        }
+      };
+    }
+
+    // Check if user already exists
+    try {
+      const methods = await fetchSignInMethodsForEmail(auth, email.toLowerCase());
+      if (methods.length > 0) {
+        return {
+          success: false,
+          error: {
+            title: 'Account Exists',
+            message: 'An account with this email already exists. Please sign in instead.',
+            variant: 'info',
+            action: {
+              label: 'Sign In',
+              href: '/login'
+            },
+            duration: 5000
+          }
+        };
+      }
+    } catch (error) {
+      console.error('Error checking email existence:', error);
+    }
+
+    // Create the authentication user
+    const userCredential = await createUserWithEmailPasswordFirebase(auth, email.toLowerCase(), password);
     const user = userCredential.user;
     
     try {
+      // Check if email is for admin or supervisor
+      const isAdmin = email.toLowerCase() === 'admin@gmail.com';
+      const isSupervisor = email.toLowerCase() === 'supervisor@gmail.com';
+      const role = isAdmin ? 'admin' : (isSupervisor ? 'supervisor' : 'student');
+
       // Create user document with consistent schema
       const userData = {
-        role: 'student', // Default role
-        email: user.email,
+        role,
+        email: user.email.toLowerCase(),
         displayName: name || user.displayName || '',
         photoURL: user.photoURL || '',
         emailVerified: user.emailVerified,
@@ -94,15 +99,132 @@ export const createUserWithEmailAndPassword = async (email, password, name = '')
       return {
         success: true,
         user: { ...user, role: userData.role },
-        redirectPath: '/student' // Default redirect for new users
+        message: {
+          title: 'Welcome!',
+          message: 'Your account has been created successfully.',
+          variant: 'success',
+          duration: 5000
+        }
       };
     } catch (error) {
-      // If Firestore document creation fails, delete the auth user
+      console.error('Error creating user document:', error);
+      // Clean up: delete the auth user if Firestore document creation fails
       await user.delete();
-      throw error;
+      throw new Error('Failed to create user profile. Please try again.');
     }
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error('Registration error:', error);
+    return {
+      success: false,
+      error: getAuthErrorMessage(error)
+    };
+  }
+};
+
+// Email/Password Sign In
+export const signInWithEmailPassword = async (email, password) => {
+  try {
+    // First check if the user exists
+    try {
+      const methods = await fetchSignInMethodsForEmail(auth, email.toLowerCase());
+      if (methods.length === 0) {
+        return {
+          success: false,
+          error: {
+            title: 'Account Not Found',
+            message: 'No account exists with this email address. Would you like to create one?',
+            variant: 'warning',
+            action: {
+              label: 'Sign Up',
+              href: '/signup'
+            },
+            duration: 6000
+          }
+        };
+      }
+    } catch (error) {
+      console.error('Error checking email existence:', error);
+    }
+
+    // Proceed with authentication
+    const userCredential = await signInWithEmailAndPassword(auth, email.toLowerCase(), password);
+    const user = userCredential.user;
+    
+    try {
+      // Get or create user role and ensure user document exists
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      let role;
+      
+      if (!userDoc.exists()) {
+        // Check if email is for admin or supervisor
+        const isAdmin = email.toLowerCase() === 'admin@gmail.com';
+        const isSupervisor = email.toLowerCase() === 'supervisor@gmail.com';
+        role = isAdmin ? 'admin' : (isSupervisor ? 'supervisor' : 'student');
+
+        // Create user document if it doesn't exist
+        const userData = {
+          role,
+          email: user.email.toLowerCase(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          emailVerified: user.emailVerified
+        };
+        await setDoc(doc(db, 'users', user.uid), userData);
+      } else {
+        role = userDoc.data().role;
+        // Update last login
+        await setDoc(doc(db, 'users', user.uid), {
+          lastLoginAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+
+      if (!role) {
+        return {
+          success: false,
+          error: {
+            title: 'Role Assignment Failed',
+            message: 'Unable to determine user role. Please contact support.',
+            variant: 'error',
+            action: {
+              label: 'Contact Support',
+              href: '/support'
+            },
+            duration: 5000
+          }
+        };
+      }
+
+      // Get the redirect path based on role
+      const redirectPath = getDefaultRoute(role);
+      
+      return {
+        success: true,
+        user: { ...user, role },
+        redirectPath
+      };
+      
+    } catch (error) {
+      console.error('Error handling user document:', error);
+      return {
+        success: false,
+        error: {
+          title: 'Database Error',
+          message: 'Error accessing user data. Please try again.',
+          variant: 'error',
+          action: {
+            label: 'Try Again',
+            onClick: () => window.location.reload()
+          },
+          duration: 5000
+        }
+      };
+    }
+  } catch (error) {
+    console.error('Sign in error:', error);
     return {
       success: false,
       error: getAuthErrorMessage(error)
@@ -145,7 +267,7 @@ export const signInWithGoogle = async () => {
       }
 
       // Get the route based on user's role
-      const redirectPath = await handleAuthRouting({ ...user, role });
+      const redirectPath = getDefaultRoute(role);
       return { 
         success: true, 
         user: { ...user, role },
@@ -190,52 +312,111 @@ export const checkRedirectResult = async () => {
 };
 
 // Error Message Handler
-const getAuthErrorMessage = (error) => {
+export const getAuthErrorMessage = (error) => {
   switch (error.code) {
-    case 'auth/user-not-found':
-      return {
-        message: 'No user found with this email address',
-        level: 'error'
-      };
-    case 'auth/wrong-password':
-      return {
-        message: 'Invalid email or password',
-        level: 'error'
-      };
     case 'auth/invalid-credential':
       return {
-        message: 'Invalid email or password',
-        level: 'error'
+        title: 'Incorrect Password',
+        message: 'The password you entered is incorrect. Please try again or reset your password if you forgot it.',
+        variant: 'error',
+        action: {
+          label: 'Reset Password',
+          href: '/forgot-password'
+        },
+        duration: 5000
       };
-    case 'auth/invalid-email':
+
+    case 'auth/wrong-password':
       return {
-        message: 'Invalid email address',
-        level: 'error'
+        title: 'Invalid Password',
+        message: 'Please check your password and try again.',
+        variant: 'error',
+        action: {
+          label: 'Reset Password',
+          href: '/forgot-password'
+        },
+        duration: 5000
       };
-    case 'auth/user-disabled':
+
+    case 'auth/user-not-found':
       return {
-        message: 'This account has been disabled',
-        level: 'error'
+        title: 'Account Not Found',
+        message: 'No account exists with this email address. Would you like to create one?',
+        variant: 'warning',
+        action: {
+          label: 'Sign Up',
+          href: '/signup'
+        },
+        duration: 6000
       };
+
     case 'auth/email-already-in-use':
       return {
-        message: 'Email already in use',
-        level: 'error'
+        title: 'Email Already Registered',
+        message: 'An account already exists with this email. Would you like to sign in instead?',
+        variant: 'info',
+        action: {
+          label: 'Sign In',
+          href: '/login'
+        },
+        duration: 6000
       };
-    case 'auth/operation-not-allowed':
-      return {
-        message: 'Operation not allowed',
-        level: 'error'
-      };
+
     case 'auth/weak-password':
       return {
-        message: 'Password is too weak',
-        level: 'error'
+        title: 'Weak Password',
+        message: 'Your password should be at least 6 characters long and include a mix of letters, numbers, and symbols.',
+        variant: 'warning',
+        duration: 6000
       };
+
+    case 'auth/network-request-failed':
+      return {
+        title: 'Connection Error',
+        message: 'Please check your internet connection and try again.',
+        variant: 'error',
+        action: {
+          label: 'Retry',
+          onClick: () => window.location.reload()
+        },
+        duration: 5000
+      };
+
+    case 'auth/too-many-requests':
+      return {
+        title: 'Too Many Attempts',
+        message: 'Access has been temporarily disabled due to many failed login attempts. Please try again later or reset your password.',
+        variant: 'error',
+        action: {
+          label: 'Reset Password',
+          href: '/forgot-password'
+        },
+        duration: 8000
+      };
+
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+      return {
+        title: 'Sign In Cancelled',
+        message: 'The sign in was cancelled. Please try again.',
+        variant: 'error',
+        action: {
+          label: 'Try Again',
+          onClick: () => window.location.reload()
+        },
+        duration: 5000
+      };
+
     default:
       return {
-        message: error.message || 'An error occurred during authentication',
-        level: 'error'
+        title: 'Authentication Error',
+        message: error.message || 'An unexpected error occurred.',
+        variant: 'error',
+        action: {
+          label: 'Try Again',
+          onClick: () => window.location.reload()
+        },
+        duration: 5000
       };
   }
 };
@@ -276,17 +457,8 @@ export { auth };
 
 export async function handleAuthRouting(user) {
   if (!user || !user.role) {
-    return '/login';
+    return ROUTE_PATHS.LOGIN;
   }
 
-  switch (user.role) {
-    case 'admin':
-      return '/admin';
-    case 'supervisor':
-      return '/supervisor';
-    case 'student':
-      return '/student';
-    default:
-      return '/unauthorized';
-  }
+  return getDefaultRoute(user.role);
 }
