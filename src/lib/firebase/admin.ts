@@ -18,5 +18,5 @@ function initAdmin() {
 
 initAdmin();
 
-export const adminAuth = getAuth();
-export const adminDb = getFirestore(); 
+export const auth = getAuth();
+export const db = getFirestore(); 
