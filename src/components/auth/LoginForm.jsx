@@ -1,76 +1,79 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FormInput } from './components/FormInput';
+import { FormInput, SocialAuthButtons, FormDivider } from './components';
 import { Button } from '../form/button';
-import { SocialAuthButtons } from './components/SocialAuthButtons';
-import { FormDivider } from './components/FormDivider';
-import { useAuth } from '../../hooks/useAuth';
+import AuthLayout from './layout/AuthLayout';
 
 export default function LoginForm() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isLoading, error, handleEmailAuth, handleGoogleAuth } = useAuth();
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
     try {
-      const { success, user, redirectPath, error } = await handleEmailAuth(
-        formData.email, 
-        formData.password, 
-        true, // isSignIn = true for login
-        null, // no name needed for login
-        rememberMe
-      );
-      
-      if (success && user) {
-        router.push(redirectPath);
-      } else if (error) {
-        console.error('Login error:', error);
+      // Validate inputs
+      if (!formData.email || !formData.password) {
+        throw new Error('Please fill in all fields');
       }
-    } catch (error) {
-      console.error('Login error:', error);
+
+      if (!formData.email.includes('@')) {
+        throw new Error('Please enter a valid email');
+      }
+
+      // Console-based authentication logic
+      console.log('Login attempt:', {
+        email: formData.email,
+        password: formData.password,
+        rememberMe
+      });
+
+      // Simulate authentication delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Login successful!');
+      console.log('Redirecting to dashboard...');
+      
+    } catch (err) {
+      setError(err.message);
+      console.error('Login error:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoogleClick = async () => {
-    try {
-      const { success, user, redirectPath, error } = await handleGoogleAuth();
-      if (success && user && redirectPath) {
-        router.push(redirectPath);
-      } else if (error) {
-        console.error('Google login error:', error);
-      }
-    } catch (error) {
-      console.error('Google login error:', error);
-    }
+  const handleGoogleLogin = () => {
+    console.log('Google login clicked');
+    console.log('This would typically open Google OAuth flow');
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md mx-auto p-6">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+    <AuthLayout>
+      <div id="login-form-container" className="">
+        <div id="login-form-header" className="text-center mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Welcome back
-          </h1>
+          </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Sign in to your account
           </p>
@@ -79,40 +82,51 @@ export default function LoginForm() {
         <AnimatePresence>
           {error && (
             <motion.div
+              id="login-error-message"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm"
             >
-              {error}
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{error}</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="login-form" onSubmit={handleSubmit} className="space-y-6">
           <FormInput
+            id="login-email-input"
             label="Email address"
             name="email"
             type="email"
             value={formData.email}
             onChange={handleInputChange}
-            disabled={isLoading || isSubmitting}
+            disabled={isSubmitting}
             required
+            autoComplete="email"
           />
 
           <FormInput
+            id="login-password-input"
             label="Password"
             name="password"
             type="password"
             value={formData.password}
             onChange={handleInputChange}
-            disabled={isLoading || isSubmitting}
+            disabled={isSubmitting}
             required
+            autoComplete="current-password"
           />
 
-          <div className="flex items-center justify-between">
+          <div id="login-remember-forgot" className="flex items-center justify-between">
             <label className="flex items-center">
               <input
+                id="login-remember-checkbox"
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
@@ -124,6 +138,7 @@ export default function LoginForm() {
             </label>
 
             <Link
+              id="login-forgot-password-link"
               href="/forgot-password"
               className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
             >
@@ -132,21 +147,30 @@ export default function LoginForm() {
           </div>
 
           <Button
+            id="login-submit-button"
             type="submit"
-            disabled={isLoading || isSubmitting}
+            disabled={isSubmitting}
             className="w-full"
           >
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
+            {isSubmitting ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              'Sign in'
+            )}
           </Button>
 
-          <FormDivider text="Or continue with" />
+          <FormDivider id="login-form-divider" text="Or continue with" />
           
-          <SocialAuthButtons 
-            onGoogleClick={handleGoogleClick}
-            disabled={isLoading || isSubmitting}
+          <SocialAuthButtons
+            id="login-social-auth-buttons"
+            onGoogleClick={handleGoogleLogin}
+            disabled={isSubmitting}
           />
 
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <p id="login-signup-prompt" className="text-center text-sm text-gray-600 dark:text-gray-400">
             Don't have an account?{' '}
             <Link 
               href="/register" 
@@ -157,6 +181,6 @@ export default function LoginForm() {
           </p>
         </form>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

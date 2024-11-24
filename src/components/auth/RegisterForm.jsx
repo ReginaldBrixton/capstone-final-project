@@ -1,185 +1,148 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FormInput } from './components/FormInput'
-import { Button } from '../form/button'
-import { SocialAuthButtons } from './components/SocialAuthButtons'
-import { FormDivider } from './components/FormDivider'
-import { PasswordStrengthIndicator } from './components/PasswordStrengthIndicator'
-import { PasswordRequirements } from './components/PasswordRequirements'
-import { useAuth } from '../../hooks/useAuth'
-import { useToast } from '../../components/ui/useToast'
+import { 
+  FormInput, 
+  SocialAuthButtons, 
+  FormDivider, 
+  PasswordStrengthIndicator, 
+  PasswordRequirements 
+} from './components'
+import { Button } from '../ui/button'
+import AuthLayout from './layout/AuthLayout'
 
 export default function RegisterForm() {
-  const router = useRouter()
-  const { toast } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
-  })
-  const [passwordStrength, setPasswordStrength] = useState(0)
-  const [formErrors, setFormErrors] = useState({})
-  const [showPassword, setShowPassword] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { isLoading, error, handleEmailAuth, handleGoogleAuth } = useAuth()
+  });
+  
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [formErrors, setFormErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const calculatePasswordStrength = (password) => {
-    let strength = 0
-    if (password.length >= 8) strength += 20
-    if (password.match(/[A-Z]/)) strength += 20
-    if (password.match(/[a-z]/)) strength += 20
-    if (password.match(/[0-9]/)) strength += 20
-    if (password.match(/[^A-Za-z0-9]/)) strength += 20
-    return strength
+    let strength = 0;
+    if (password.length >= 8) strength += 20;
+    if (password.match(/[A-Z]/)) strength += 20;
+    if (password.match(/[a-z]/)) strength += 20;
+    if (password.match(/[0-9]/)) strength += 20;
+    if (password.match(/[^A-Za-z0-9]/)) strength += 20;
+    return strength;
   }
 
   const validateField = (name, value) => {
     switch (name) {
       case 'name':
-        return value.trim().length < 2 ? {
-          message: 'Name must be at least 2 characters long',
-          type: 'error'
-        } : null
+        return value.trim().length < 2 ? 'Name must be at least 2 characters long' : null;
       case 'email':
-        return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? {
-          message: 'Please enter a valid email address',
-          type: 'error'
-        } : null
+        return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Please enter a valid email address' : null;
       case 'password':
-        if (passwordStrength < 80) {
-          return {
-  
-          }
+        if (passwordStrength < 60) {
+          return 'Password is too weak';
         }
-        if (formData.confirmPassword && value !== formData.confirmPassword) {
-          setFormErrors(prev => ({
-            ...prev,
-            confirmPassword: {
-              message: 'Passwords do not match',
-              type: 'error'
-            }
-          }))
-        }
-        return null
+        return null;
       case 'confirmPassword':
-        return value !== formData.password ? {
-          message: 'Passwords do not match',
-          type: 'error'
-        } : null
+        return value !== formData.password ? 'Passwords do not match' : null;
       default:
-        return null
+        return null;
     }
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    
-    const error = validateField(name, value)
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    if (name === 'password') {
+      const strength = calculatePasswordStrength(value);
+      setPasswordStrength(strength);
+    }
+
+    const error = validateField(name, value);
     setFormErrors(prev => ({
       ...prev,
       [name]: error
-    }))
-
-    if (name === 'password') {
-      const strength = calculatePasswordStrength(value)
-      setPasswordStrength(strength)
-    }
+    }));
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Validate all fields
-    const errors = {};
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key]);
-      if (error) errors[key] = error;
-    });
-
-    // Additional password match validation
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = {
-        message: 'Passwords do not match',
-        type: 'error'
-      };
-    }
-
-    setFormErrors(errors);
-
-    if (Object.keys(errors).length === 0) {
-      try {
-        // Call handleEmailAuth with isSignIn = false for registration
-        const { success, user, redirectPath, error } = await handleEmailAuth(
-          formData.email,
-          formData.password,
-          false, // isSignIn = false for registration
-          formData.name // Pass the name for the user profile
-        );
-
-        if (success && user) {
-          // Show success toast and redirect
-          toast({
-            title: "Success",
-            description: "Registration successful! Redirecting...",
-            variant: "default",
-            duration: 3000,
-          });
-          router.push(redirectPath);
-        } else if (error) {
-          // Show error in the form
-          setFormErrors(prev => ({
-            ...prev,
-            submit: {
-              message: error,
-              type: 'error'
-            }
-          }));
-          // Show error toast
-          toast({
-            title: "Registration Failed",
-            description: error,
-            variant: "destructive",
-            duration: 5000,
-          });
-        }
-      } catch (error) {
-        console.error('Registration error:', error);
-        setFormErrors(prev => ({
-          ...prev,
-          submit: {
-            message: error.message || 'Registration failed',
-            type: 'error'
-          }
-        }));
-        toast({
-          title: "Error",
-          description: error.message || 'Registration failed',
-          variant: "destructive",
-          duration: 5000,
-        });
+    try {
+      // Validate all fields
+      if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+        throw new Error('Please fill in all fields');
       }
+
+      if (formData.name.trim().length < 2) {
+        throw new Error('Name must be at least 2 characters long');
+      }
+
+      if (!formData.email.includes('@')) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      if (passwordStrength < 60) {
+        throw new Error('Please choose a stronger password');
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      // Console-based registration logic
+      console.log('Registration attempt:', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
+
+      // Simulate registration delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Registration successful!');
+      console.log('Redirecting to login page...');
+      
+    } catch (err) {
+      setError(err.message);
+      console.error('Registration error:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
+  };
+
+  const handleGoogleRegister = () => {
+    console.log('Google registration clicked');
+    console.log('This would typically open Google OAuth flow');
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Create your account
-        </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Join us and start managing your research projects
-        </p>
-      </div>
+    <AuthLayout>
+      <div className="register-form-container">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="register-form-header text-center mb-4 sm:mb-6"
+        >
+          <h2 className="register-form-title text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            Create an account
+          </h2>
+          <p className="register-form-subtitle mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Start your journey with us
+          </p>
+        </motion.div>
 
         <AnimatePresence>
           {error && (
@@ -187,93 +150,113 @@ export default function RegisterForm() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[13px]"
+              className="register-form-error mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800"
             >
-              {error}
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs font-medium text-red-800 dark:text-red-300">{error}</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <FormInput
-            label="Full Name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            error={formErrors.name?.message}
-            errorType={formErrors.name?.type}
-            disabled={isLoading || isSubmitting}
-            required
-          />
+        <form onSubmit={handleSubmit} className="register-form space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormInput
+              label="Full Name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleInputChange}
+              error={formErrors.name}
+              disabled={isSubmitting}
+              required
+              className="register-form-input"
+            />
 
-          <FormInput
-            label="Email address"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            error={formErrors.email?.message}
-            errorType={formErrors.email?.type}
-            disabled={isLoading || isSubmitting}
-            required
-          />
+            <FormInput
+              label="Email address"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              error={formErrors.email}
+              disabled={isSubmitting}
+              required
+              className="register-form-input"
+            />
+          </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <FormInput
               label="Password"
               name="password"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleInputChange}
-              error={formErrors.password?.message}
-              errorType={formErrors.password?.type}
-              disabled={isLoading || isSubmitting}
+              error={formErrors.password}
+              disabled={isSubmitting}
               required
+              className="register-form-input"
             />
-            
-            {formData.password && <PasswordStrengthIndicator strength={passwordStrength} />}
-            {formData.password && <PasswordRequirements password={formData.password} />}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <PasswordStrengthIndicator strength={passwordStrength} className="password-strength-indicator" />
+              <PasswordRequirements password={formData.password} className="password-requirements mt-1" />
+            </motion.div>
           </div>
 
           <FormInput
             label="Confirm Password"
             name="confirmPassword"
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={formData.confirmPassword}
             onChange={handleInputChange}
-            error={formErrors.confirmPassword?.message}
-            errorType={formErrors.confirmPassword?.type}
-            disabled={isLoading || isSubmitting}
+            error={formErrors.confirmPassword}
+            disabled={isSubmitting}
             required
+            className="register-form-input"
           />
 
-          <div className="space-y-6">
-            <Button
-              type="submit"
-              disabled={isLoading || isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? 'Creating account...' : 'Create account'}
-            </Button>
-
-            <FormDivider text="Or continue with" />
-            
-            <SocialAuthButtons 
-              onGoogleClick={handleGoogleAuth}
-              disabled={isLoading || isSubmitting}
-            />
-          </div>
-
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
-          <Link 
-            href="/login" 
-            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="register-form-submit w-full py-2 text-sm font-medium transition-all duration-300"
           >
-            Sign in
-          </Link>
-        </p>
-      </form>
-    </div>
-  )
+            {isSubmitting ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Creating account...</span>
+              </div>
+            ) : (
+              'Create account'
+            )}
+          </Button>
+
+          <FormDivider text="Or continue with" className="form-divider my-4" />
+          
+          <SocialAuthButtons 
+            onGoogleClick={handleGoogleRegister}
+            disabled={isSubmitting}
+            className="social-auth-buttons"
+          />
+
+          <p className="register-form-footer text-center text-xs text-gray-600 dark:text-gray-400 mt-4">
+            Already have an account?{' '}
+            <Link 
+              href="/login" 
+              className="register-form-login-link font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 transition-colors duration-300"
+            >
+              Sign in
+            </Link>
+          </p>
+        </form>
+      </div>
+    </AuthLayout>
+  );
 }

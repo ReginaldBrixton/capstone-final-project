@@ -1,24 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../hooks/useAuth';
-
 export default function DashboardPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+  // Mock user and loading state
+  const user = { email: 'user@example.com' }; // Replace with actual user data
+  const loading = false; // Replace with actual loading state
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   if (!user) {
+    // Simulate redirecting to login
+    console.log('Redirecting to /login');
     return null;
   }
 

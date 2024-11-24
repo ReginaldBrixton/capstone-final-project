@@ -12,13 +12,16 @@ export function PasswordStrengthIndicator({ strength }) {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+    <div className="password-strength-indicator space-y-1">
+      <div className="strength-bar h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
-          className={`h-full transition-all duration-300 ${getStrengthColor(strength)}`}
+          className={`strength-fill h-full transition-all duration-300 ${getStrengthColor(strength)}`}
           style={{ width: `${strength}%` }}
         />
       </div>
+      {/* <div className="strength-text text-sm">
+        {getStrengthText(strength)}
+      </div> */}
     </div>
   )
 } 

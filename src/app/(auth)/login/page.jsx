@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import LoginForm from '../../../components/auth/LoginForm'
-import TestUserRegistration from '../../../components/auth/components/TestUserRegistration'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,43 +28,18 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      // Log the user's credentials instead of making an API call
+      console.log('Login attempt with:', {
+        email: formData.email,
+        password: formData.password
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
-      }
-
-      // Handle successful login
-      console.log('Login successful:', data.user)
-      
-      // Redirect based on user role
-      switch (data.user.role) {
-        case 'admin':
-          router.push('/admin')
-          break
-        case 'supervisor':
-          router.push('/supervisor')
-          break
-        case 'student':
-          router.push('/student')
-          break
-        default:
-          router.push('/')
-      }
+      // Simulate successful login
+      console.log('Login successful!')
+      router.push('/') // Default redirect
 
     } catch (err) {
-      setError(err.message)
+      setError('An error occurred during login')
     } finally {
       setIsLoading(false)
     }
@@ -77,8 +51,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="login-page min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="login-container max-w-md w-full space-y-8">
         <LoginForm 
           formData={formData}
           isLoading={isLoading}
@@ -87,13 +61,6 @@ export default function LoginPage() {
           onSubmit={onSubmit}
           onSocialLogin={handleSocialLogin}
         />
-        
-        {/* Add test user registration in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8">
-            <TestUserRegistration />
-          </div>
-        )}
       </div>
     </div>
   )

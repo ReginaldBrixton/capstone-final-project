@@ -35,18 +35,18 @@ export function FormInput({
                     htmlFor={name}
                     className={`
                         block text-sm font-medium tracking-wide
-                        transition-all duration-200 ease-in-out
-                        ${isFocused ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300'}
+                        transition-all duration-300 ease-in-out
+                        ${isFocused ? 'text-indigo-600 dark:text-indigo-400 scale-105' : 'text-gray-700 dark:text-gray-300'}
                     `}
                 >
                     {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
+                    {required && <span className="text-red-500 ml-1 animate-pulse">*</span>}
                 </label>
             )}
             <div 
-                className="relative"
-                onMouseEnter={() => error && isFocused && setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
+                className="relative group"
+                onMouseEnter={() => error && setShowTooltip(true)}
+                onMouseLeave={() => !isFocused && setShowTooltip(false)}
             >
                 <input
                     id={name}
@@ -62,14 +62,16 @@ export function FormInput({
                     }}
                     onBlur={() => {
                         setIsFocused(false);
-                        setShowTooltip(false);
+                        setTimeout(() => setShowTooltip(false), 200);
                     }}
                     className={`
                         block w-full rounded-lg border px-4 py-3 text-sm
-                        transition-all duration-200 ease-in-out
-                        ${disabled ? 'bg-gray-50 cursor-not-allowed opacity-75' : 'bg-white dark:bg-gray-800'}
-                        ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 
-                          'border-gray-200 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500'}
+                        transition-all duration-300 ease-in-out
+                        ${disabled ? 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-75' : 'bg-white dark:bg-gray-800'}
+                        ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-700 dark:focus:border-red-600' : 
+                          'border-gray-200 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400'}
+                        ${isFocused ? 'shadow-lg scale-[1.01]' : 'shadow-sm hover:shadow-md'}
+                        dark:text-gray-100 dark:placeholder-gray-400
                         ${className}
                     `}
                     placeholder={inputProps.placeholder || `Enter your ${label?.toLowerCase()}`}
@@ -85,11 +87,12 @@ export function FormInput({
                         className={`
                             absolute right-3 top-1/2 -translate-y-1/2 p-1.5
                             text-gray-500 hover:text-gray-700 
-                            dark:text-gray-400 dark:hover:text-gray-300
-                            transition-colors duration-200
+                            dark:text-gray-400 dark:hover:text-gray-200
+                            transition-all duration-300
                             rounded-md
                             focus:outline-none focus:ring-2 focus:ring-indigo-500/50
                             hover:bg-gray-100 dark:hover:bg-gray-700
+                            ${showPassword ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''}
                         `}
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
@@ -129,22 +132,4 @@ export function FormInput({
             </div>
         </div>
     );
-}
-
-FormInput.propTypes = {
-    label: PropTypes.string,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string,
-    value: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    error: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.shape({
-            message: PropTypes.string,
-            type: PropTypes.string
-        })
-    ]),
-    disabled: PropTypes.bool,
-    required: PropTypes.bool,
-    className: PropTypes.string
 }
