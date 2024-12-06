@@ -11,7 +11,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:fix": "eslint --fix .",
-    "prepare": "husky install",
     "pre-build": "lint-staged && next lint",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -64,7 +63,6 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "postcss-import": "^16.1.0",
     "prettier": "^3.4.2",
@@ -77,21 +75,19 @@
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-react": "^7.23.3",
-    "babel-jest": "^29.7.0"
+    "babel-jest": "^29.7.0",
+    "identity-obj-proxy": "^3.0.0"
   },
   "lint-staged": {
     "*.{js,jsx}": [
       "prettier --write",
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ],
     "*.{json,md,html,css,scss}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.js?(x)": [
-      "eslint --fix --max-warnings=0",
-      "git add"
+      "eslint --fix --max-warnings=0"
     ]
   }
 }
