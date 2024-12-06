@@ -6,7 +6,6 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "fix-js": "eslint-auto-fix",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
@@ -14,6 +13,7 @@
     "check": "bun run format:check && bun run lint"
   },
   "dependencies": {
+    "eslint-auto-fix": "^1.0.4",
     "next": "15.0.3",
     "react": "^19.0.0",
     "react-dom": "19.0.0-rc-66855b96-20241106"
