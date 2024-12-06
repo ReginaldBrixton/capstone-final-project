@@ -1,9 +1,10 @@
-// Next.js Manifest Configuration
-export default function manifest() {
+import type { MetadataRoute } from 'next'
+
+export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Capstone Project System',
-    short_name: 'Capstone Project System',
-    description: 'A capstone project for the final project of the course',
+    name: 'Next.js PWA',
+    short_name: 'NextPWA',
+    description: 'A Progressive Web App built with Next.js',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
@@ -20,5 +21,5 @@ export default function manifest() {
         type: 'image/png',
       },
     ],
-  };
+  }
 }
