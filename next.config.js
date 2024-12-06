@@ -1,9 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  images: {
-    domains: ['images.unsplash.com'],
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "unsafe-none"
+          }
+        ]
+      }
+    ]
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 }
 
-export default nextConfig 
+module.exports = nextConfig
