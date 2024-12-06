@@ -1,0 +1,59 @@
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: $breakpoint-mobile) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media (max-width: $breakpoint-tablet) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (max-width: $breakpoint-desktop) {
+      @content;
+    }
+  }
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin shadow($level: 1) {
+  @if $level == 1 {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  } @else if $level == 2 {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  } @else if $level == 3 {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@mixin button-base {
+  padding: $spacing-small $spacing-medium;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all $transition-speed $transition-timing;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+} 
