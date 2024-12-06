@@ -1,0 +1,9 @@
+.next
+build
+node_modules
+public
+.vercel
+package-lock.json
+yarn.lock
+bun.lockb
+*.md 

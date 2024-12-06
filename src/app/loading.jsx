@@ -1,9 +1,15 @@
-"use client"
+'use client';
 
-import React from 'react'
-import { motion } from 'framer-motion'
-
-const subjects = ['Math', 'Science', 'History', 'Literature', 'Art', 'Music', 'Geography', 'Physics']
+const subjects = [
+  'Math',
+  'Science', 
+  'History',
+  'Literature',
+  'Art',
+  'Music',
+  'Geography',
+  'Physics',
+];
 
 export default function FloatingSubjectsLoader() {
   return (
@@ -11,60 +17,84 @@ export default function FloatingSubjectsLoader() {
       <div className="text-center">
         <div className="relative w-64 h-64 mx-auto mb-8">
           {subjects.map((subject, index) => (
-            <motion.div
+            <div
               key={subject}
               className="absolute text-lg font-bold text-purple-600 dark:text-purple-300"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5],
-                x: Math.cos(index / subjects.length * Math.PI * 2) * 100,
-                y: Math.sin(index / subjects.length * Math.PI * 2) * 100,
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                delay: index * 0.5,
-                ease: "easeInOut",
+              style={{
+                opacity: 0,
+                transform: `translate(
+                  ${Math.cos((index / subjects.length) * Math.PI * 2) * 100}px,
+                  ${Math.sin((index / subjects.length) * Math.PI * 2) * 100}px
+                ) scale(0.5)`,
+                animation: `float 4s ease-in-out ${index * 0.5}s infinite`
               }}
             >
               {subject}
-            </motion.div>
+            </div>
           ))}
-          <motion.div
+          <div 
             className="absolute inset-0 rounded-full bg-purple-200 dark:bg-purple-700"
-            animate={{
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
+            style={{
+              animation: "pulse 2s ease-in-out infinite"
             }}
           />
         </div>
-        <motion.h2
+        <h2 
           className="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          style={{
+            opacity: 0,
+            animation: "fadeIn 0.5s ease-in-out 0.5s forwards"
+          }}
         >
           Gathering Wisdom...
-        </motion.h2>
-        <motion.div
+        </h2>
+        <div
           className="w-64 h-2 bg-purple-200 dark:bg-purple-700 rounded-full mx-auto overflow-hidden"
-          initial={{ width: 0 }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 2, repeat: Infinity }}
+          style={{
+            animation: "grow 2s linear infinite"
+          }}
         >
-          <motion.div
+          <div
             className="h-full bg-purple-500 dark:bg-purple-300 rounded-full"
-            initial={{ x: "-100%" }}
-            animate={{ x: "100%" }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            style={{
+              animation: "slide 1s linear infinite"
+            }}
           />
-        </motion.div>
+        </div>
       </div>
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            opacity: 0;
+            transform: translate(
+              ${Math.cos((0 / subjects.length) * Math.PI * 2) * 100}px,
+              ${Math.sin((0 / subjects.length) * Math.PI * 2) * 100}px
+            ) scale(0.5);
+          }
+          50% {
+            opacity: 1;
+            transform: translate(
+              ${Math.cos((0 / subjects.length) * Math.PI * 2) * 100}px,
+              ${Math.sin((0 / subjects.length) * Math.PI * 2) * 100}px
+            ) scale(1);
+          }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+        @keyframes grow {
+          from { width: 0; }
+          to { width: 100%; }
+        }
+        @keyframes slide {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
-  )
+  );
 }
