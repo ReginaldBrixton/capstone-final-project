@@ -46,6 +46,8 @@
     "tailwindcss": "^3.4.16"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
     "@shadcn/ui": "^0.0.4",
     "@types/bun": "latest",
     "@types/node": "^20.17.9",
@@ -67,11 +69,17 @@
   },
   "lint-staged": {
     "*.{js,jsx}": [
+      "prettier --write",
       "eslint --fix",
-      "prettier --write"
+      "git add"
     ],
-    "*.{json,md}": [
-      "prettier --write"
+    "*.{json,md,html,css,scss}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.js?(x)": [
+      "eslint --fix --max-warnings=0",
+      "git add"
     ]
   }
 }
