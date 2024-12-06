@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'mixins';
+@use './_variables' as v;
+@use './_mixins' as m;
 
 // Variables
 :root {

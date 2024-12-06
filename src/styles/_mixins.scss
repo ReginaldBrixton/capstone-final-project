@@ -1,3 +1,5 @@
+@use './_variables' as v;
+
 @mixin flex-center {
   display: flex;
   align-items: center;
@@ -12,15 +14,15 @@
 
 @mixin responsive($breakpoint) {
   @if $breakpoint == mobile {
-    @media (max-width: $breakpoint-mobile) {
+    @media (max-width: v.$breakpoint-mobile) {
       @content;
     }
   } @else if $breakpoint == tablet {
-    @media (max-width: $breakpoint-tablet) {
+    @media (max-width: v.$breakpoint-tablet) {
       @content;
     }
   } @else if $breakpoint == desktop {
-    @media (max-width: $breakpoint-desktop) {
+    @media (max-width: v.$breakpoint-desktop) {
       @content;
     }
   }
@@ -43,11 +45,11 @@
 }
 
 @mixin button-base {
-  padding: $spacing-small $spacing-medium;
+  padding: v.$spacing-small v.$spacing-medium;
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  transition: all $transition-speed $transition-timing;
+  transition: all v.$transition-speed v.$transition-timing;
   
   &:hover {
     transform: translateY(-1px);
