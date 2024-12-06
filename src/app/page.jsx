@@ -1,13 +1,13 @@
 import styles from './page.module.scss';
 import Link from 'next/link';
-import { ArrowRight, Code, Layout, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import Header from '@/components/Header';
+import Features from '@/components/Features';
 
 export default function Home() {
   return (
     <div className={styles.page}>
-      <header>
-        <h1 className="text-4xl font-bold tracking-tight">Welcome to Our App</h1>
-      </header>
+      <Header />
 
       <main className={styles.main}>
         <div className="text-center max-w-2xl mx-auto">
@@ -15,31 +15,7 @@ export default function Home() {
             A modern web application built with Next.js and React
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="p-6 rounded-lg bg-gray-alpha-100 hover:bg-gray-alpha-200 transition-colors">
-              <Layout className="w-8 h-8 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Responsive Design</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Beautiful layouts that work on any device
-              </p>
-            </div>
-
-            <div className="p-6 rounded-lg bg-gray-alpha-100 hover:bg-gray-alpha-200 transition-colors">
-              <Zap className="w-8 h-8 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Fast Performance</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Optimized for speed and efficiency
-              </p>
-            </div>
-
-            <div className="p-6 rounded-lg bg-gray-alpha-100 hover:bg-gray-alpha-200 transition-colors">
-              <Code className="w-8 h-8 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Clean Code</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Built with modern best practices
-              </p>
-            </div>
-          </div>
+          <Features />
 
           <Link 
             href="/get-started" 

@@ -1,5 +1,5 @@
-@use './_variables' as v;
-@use './_mixins' as m;
+@use 'variables';
+@use 'mixins';
 
 @tailwind base;
 @tailwind components;

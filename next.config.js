@@ -2,11 +2,13 @@
 const nextConfig = {
   sassOptions: {
     includePaths: ['./src/styles'],
-    quietDeps: true,
-    logger: {
-      silent: true
-    }
-  },
+    prependData: `
+      @use "sass:math";
+      @use "./src/styles/_variables.scss" as *;
+      @use "./src/styles/_mixins.scss" as *;
+    `,
+    silenceDeprecations: ['legacy-js-api']
+  }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
