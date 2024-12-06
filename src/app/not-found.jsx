@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// eslint-disable-next-line no-unused-vars
 import Link from 'next/link';
+import styles from '../styles/NotFound.module.scss';
 
 const AnimatedNotFound = () => {
   const [bounce, setBounce] = useState(false);
@@ -21,45 +21,40 @@ const AnimatedNotFound = () => {
   const numbers = ['4', '0', '4'];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 p-4">
-      <div className="relative">
-        <div className="flex justify-center mb-8 sm:mb-12">
-          {numbers.map((num, index) => (
-            <div
-              key={index}
-              className={`text-6xl sm:text-8xl md:text-9xl font-bold text-blue-500 transition-all duration-300 ease-in-out
-                ${hoveredChar === index ? 'text-red-500 transform scale-110' : ''}
-                ${bounce && index === 1 ? 'animate-bounce' : ''}
-                ${rotate ? 'transform rotate-y-180' : ''}`}
-              onMouseEnter={() => setHoveredChar(index)}
-              onMouseLeave={() => setHoveredChar(null)}
-            >
-              {num}
-            </div>
-          ))}
-        </div>
+    <div className={styles.notFoundContainer}>
+      <div className={styles.numbersContainer}>
+        {numbers.map((num, index) => (
+          <div
+            key={index}
+            className={`${styles.numberChar} 
+              ${hoveredChar === index ? styles.hovered : ''} 
+              ${bounce && index === 1 ? styles.bounce : ''} 
+              ${rotate ? styles.rotate : ''}`}
+            onMouseEnter={() => setHoveredChar(index)}
+            onMouseLeave={() => setHoveredChar(null)}
+          >
+            {num}
+          </div>
+        ))}
       </div>
 
-      <div className="text-xl sm:text-2xl md:text-3xl font-semibold mb-4 text-gray-700 text-center animate-fadeIn">
+      <div className={styles.title}>
         Oops! Page Not Found
       </div>
 
-      <p className="mt-4 text-gray-600 max-w-md text-center text-sm sm:text-base md:text-lg">
+      <p className={styles.description}>
         The page you're looking for has taken a digital detour.
-        <br className="hidden sm:block" />
+        <br className={styles.lineBreak} />
         Let's get you back on track!
       </p>
 
-      <div className="mt-8 flex flex-col sm:flex-row gap-4">
-        <Link
-          href="/"
-          className="group flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-300 transform hover:scale-105"
-        >
+      <div className={styles.buttonContainer}>
+        <Link href="/" className={`${styles.button} ${styles.primary}`}>
           Return Home
         </Link>
         <button
           onClick={() => window.location.reload()}
-          className="group flex items-center justify-center px-6 py-3 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+          className={`${styles.button} ${styles.secondary}`}
         >
           Try Again
         </button>
