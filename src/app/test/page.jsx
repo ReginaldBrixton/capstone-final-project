@@ -7,9 +7,14 @@ import SessionManager from '@/components/SessionManager';
 const TestPage = () => {
   const [mounted, setMounted] = useState(false);
 
+  const handleLogout = useCallback(() => {
+    // Add your logout logic here
+  }, []);
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    handleLogout();
+  }, [handleLogout]);
 
   if (!mounted) {
     return null;
