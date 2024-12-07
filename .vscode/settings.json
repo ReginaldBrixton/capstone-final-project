@@ -11,7 +11,9 @@
         "**/.next": true,
         ".next": true,
         "**/.vscode": true,
-        ".vscode": true
+        ".vscode": true,
+        "src\\app/fonts": true,
+        ".husky": true
     },
     "explorerExclude.backup": {}
 }
