@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
+
 import { streamChatCompletion } from '@/lib/openai';
 
-export default function ChatExample() {
+export default function ChatExample({ model = 'GEMMA_2B' }) {
   const [input, setInput] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,11 +18,9 @@ export default function ChatExample() {
     setResponse('');
 
     try {
-      await streamChatCompletion(
-        input,
-        (chunk) => setResponse(prev => prev + chunk)
-      );
+      await streamChatCompletion(input, (chunk) => setResponse((prev) => prev + chunk), { model });
     } catch (error) {
+      console.error('Chat completion error:', error);
       setResponse('Error: Failed to get response from the AI model.');
     } finally {
       setIsLoading(false);
@@ -29,10 +28,10 @@ export default function ChatExample() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-4">
+    <div className="max-w-2xl mx-auto space-y-4">
       <div className="flex items-center space-x-2 text-lg font-semibold">
         <MessageCircle className="w-6 h-6" />
-        <h2>Chat Example</h2>
+        <h2>Chat with AI</h2>
       </div>
 
       <div className="border rounded-lg p-4 min-h-[200px] bg-white shadow-sm">
@@ -41,9 +40,7 @@ export default function ChatExample() {
             <p>{response}</p>
           </div>
         ) : (
-          <div className="text-gray-500 text-center mt-8">
-            Ask a question to get started
-          </div>
+          <div className="text-gray-500 text-center mt-8">Ask a question to get started</div>
         )}
       </div>
 
@@ -69,11 +66,6 @@ export default function ChatExample() {
           <span>{isLoading ? 'Sending...' : 'Send'}</span>
         </button>
       </form>
-
-      <div className="text-sm text-gray-500">
-        This is an example of using the OpenAI streaming API with the Hugging Face model.
-        Try asking questions to see the streaming response in action.
-      </div>
     </div>
   );
-} 
+}

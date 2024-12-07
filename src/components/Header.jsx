@@ -8,15 +8,11 @@ export default function Header() {
       <div className="title-wrapper">
         <div className="header-title-container">
           <div className="typing-container">
-            <h1 className="title">
-              Welcome to Next.js PWA
-            </h1>
+            <h1 className="title">Welcome to Next.js PWA</h1>
           </div>
         </div>
-        <p className="subtitle">
-          A modern web application built with Next.js and React
-        </p>
+        <p className="subtitle">A modern web application built with Next.js and React</p>
       </div>
     </header>
   );
-} 
+}

@@ -1,8 +1,9 @@
-import styles from './page.module.scss';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import Header from '@/components/Header';
+
 import Features from '@/components/Features';
+import Header from '@/components/Header';
+import styles from './page.module.scss';
 
 export default function Home() {
   return (
@@ -17,8 +18,8 @@ export default function Home() {
 
           <Features />
 
-          <Link 
-            href="/get-started" 
+          <Link
+            href="/get-started"
             className="inline-flex items-center px-6 py-3 bg-black text-white dark:bg-white dark:text-black rounded-full hover:bg-button-primary-hover dark:hover:bg-button-primary-hover transition-colors"
           >
             Get Started

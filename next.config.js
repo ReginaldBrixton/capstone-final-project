@@ -7,8 +7,8 @@ const nextConfig = {
       @use "./src/styles/_variables.scss" as *;
       @use "./src/styles/_mixins.scss" as *;
     `,
-    silenceDeprecations: ['legacy-js-api']
-  }
+    silenceDeprecations: ['legacy-js-api'],
+  },
 };
 
 module.exports = nextConfig;

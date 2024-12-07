@@ -50,12 +50,12 @@
   border: none;
   cursor: pointer;
   transition: all v.$transition-speed v.$transition-timing;
-  
+
   &:hover {
     transform: translateY(-1px);
   }
-  
+
   &:active {
     transform: translateY(0);
   }
-} 
+}

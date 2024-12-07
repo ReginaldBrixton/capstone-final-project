@@ -10,20 +10,31 @@
 }
 
 @keyframes blink {
-  from, to { 
-    border-color: var(--text-primary); 
+  from,
+  to {
+    border-color: var(--text-primary);
   }
-  50% { 
-    border-color: transparent; 
+  50% {
+    border-color: transparent;
   }
 }
 
 @keyframes typeAndDelete {
-  0% { width: 0; }
-  20% { width: 100%; }
-  40% { width: 100%; }
-  60% { width: 0; }
-  100% { width: 0; }
+  0% {
+    width: 0;
+  }
+  20% {
+    width: 100%;
+  }
+  40% {
+    width: 100%;
+  }
+  60% {
+    width: 0;
+  }
+  100% {
+    width: 0;
+  }
 }
 
 .header {
@@ -43,7 +54,7 @@
     display: flex;
     justify-content: center;
     min-height: 3.5rem;
-    
+
     @media (min-width: 640px) {
       min-height: 4rem;
     }
@@ -69,10 +80,10 @@
     margin: 0 auto;
     overflow: hidden;
     width: 0;
-    animation: 
+    animation:
       typeAndDelete 8s steps(40) infinite,
       blink 0.75s step-end infinite;
-    
+
     @media (min-width: 640px) {
       font-size: 2.5rem;
     }
@@ -118,7 +129,7 @@
   --text-primary: #111827;
   --text-secondary: #4b5563;
 
-  [data-theme="dark"] {
+  [data-theme='dark'] {
     --text-primary: #f9fafb;
     --text-secondary: #d1d5db;
   }
