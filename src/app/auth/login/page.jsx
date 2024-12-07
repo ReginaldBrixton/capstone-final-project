@@ -116,8 +116,8 @@ export default function LoginPage() {
 
           {errors.submit && <div className={styles.submitError}>{errors.submit}</div>}
 
-          <AuthButton 
-            type="submit" 
+          <AuthButton
+            type="submit"
             variant="primary"
             isLoading={isLoading}
             disabled={isLoading}

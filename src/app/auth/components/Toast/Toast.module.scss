@@ -144,7 +144,8 @@
     height: 3px;
     background: currentColor;
     opacity: 0.2;
-    animation: progress 5s linear;
+    animation: progress linear forwards;
+    animation-duration: inherit;
 }
 
 @keyframes slideInRight {
@@ -177,6 +178,6 @@
     }
 
     to {
-        width: 0%;
+        width: 0;
     }
 }

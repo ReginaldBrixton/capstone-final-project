@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
 
@@ -21,20 +21,29 @@ const ToastIcon = memo(({ type }) => {
 
 const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
   const [isExiting, setIsExiting] = useState(false);
+  const [shouldRender, setShouldRender] = useState(true);
+  const progressRef = useRef(null);
 
   const handleClose = useCallback(() => {
     setIsExiting(true);
     setTimeout(() => {
+      setShouldRender(false);
       onClose();
     }, ANIMATION_DURATION);
   }, [onClose]);
 
   useEffect(() => {
-    if (duration) {
-      const timer = setTimeout(handleClose, duration);
-      return () => clearTimeout(timer);
+    if (duration && progressRef.current) {
+      progressRef.current.addEventListener('animationend', handleClose);
+      return () => {
+        if (progressRef.current) {
+          progressRef.current.removeEventListener('animationend', handleClose);
+        }
+      };
     }
   }, [duration, handleClose]);
+
+  if (!shouldRender) return null;
 
   const toastClasses = [styles.toast, styles[type], isExiting ? styles.exit : '']
     .filter(Boolean)
@@ -54,7 +63,11 @@ const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
       >
         <X size={16} />
       </button>
-      <div className={styles.toastProgress} style={{ animationDuration: `${duration}ms` }} />
+      <div
+        ref={progressRef}
+        className={styles.toastProgress}
+        style={{ animationDuration: `${duration}ms` }}
+      />
     </div>
   );
 };
