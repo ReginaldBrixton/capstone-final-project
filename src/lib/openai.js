@@ -1,5 +1,5 @@
 import { OpenAI } from "openai";
-import { MODELS, getModelConfig } from "./models";
+import { getModelConfig } from "./models";
 
 // Initialize the OpenAI client
 const client = new OpenAI({

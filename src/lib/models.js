@@ -32,6 +32,12 @@ export const MODELS = {
         defaultMaxTokens: 500,
         temperature: 0.7,
         description: "Mistral's instruction-tuned Nemo model"
+    },
+    MISTRAL_7B: {
+        name: "mistralai/Mistral-7B-Instruct-v0.2",
+        defaultMaxTokens: 500,
+        temperature: 0.7,
+        description: "Mistral's 7B parameter instruction-tuned model"
     }
 };
 
@@ -46,4 +52,4 @@ export function getModelConfig(modelKey) {
         throw new Error(`Model configuration not found for key: ${modelKey}`);
     }
     return config;
-} 
+}
