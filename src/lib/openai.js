@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { OpenAI } from "openai";
 import { getModelConfig } from "./models";
 
