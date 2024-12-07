@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const TestPage = () => {
   const [mounted, setMounted] = useState(false);
@@ -21,6 +21,30 @@ const TestPage = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleLogout = useCallback(async () => {
+    if (authState.token) {
+      try {
+        await fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'logout',
+            token: authState.token,
+          }),
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    setAuthState({
+      isLoggedIn: false,
+      token: '',
+      username: '',
+      error: '',
+    });
+    setSessionState('');
+  }, [authState.token]);
 
   // Check login status periodically only after mounting
   useEffect(() => {
@@ -53,7 +77,7 @@ const TestPage = () => {
       const interval = setInterval(checkStatus, 5000);
       return () => clearInterval(interval);
     }
-  }, [authState.token, mounted]);
+  }, [authState.token, mounted, handleLogout]);
 
   // If not mounted yet, return null or a loading state
   if (!mounted) {
@@ -105,31 +129,6 @@ const TestPage = () => {
         error: showRegister ? 'Registration failed' : 'Login failed',
       }));
     }
-  };
-
-  // Handle logout
-  const handleLogout = async () => {
-    if (authState.token) {
-      try {
-        await fetch('/api/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'logout',
-            token: authState.token,
-          }),
-        });
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    }
-    setAuthState({
-      isLoggedIn: false,
-      token: '',
-      username: '',
-      error: '',
-    });
-    setSessionState('');
   };
 
   // Handle state updates

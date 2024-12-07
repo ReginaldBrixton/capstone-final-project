@@ -19,6 +19,12 @@ const ToastIcon = memo(({ type }) => {
   return icons[type] || icons.info;
 });
 
+ToastIcon.displayName = 'ToastIcon';
+
+ToastIcon.propTypes = {
+  type: PropTypes.oneOf(['success', 'error', 'info', 'warning']).isRequired,
+};
+
 const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
   const [isExiting, setIsExiting] = useState(false);
   const [shouldRender, setShouldRender] = useState(true);
@@ -34,11 +40,10 @@ const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
 
   useEffect(() => {
     if (duration && progressRef.current) {
-      progressRef.current.addEventListener('animationend', handleClose);
+      const currentRef = progressRef.current;
+      currentRef.addEventListener('animationend', handleClose);
       return () => {
-        if (progressRef.current) {
-          progressRef.current.removeEventListener('animationend', handleClose);
-        }
+        currentRef.removeEventListener('animationend', handleClose);
       };
     }
   }, [duration, handleClose]);
@@ -73,17 +78,13 @@ const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
 };
 
 Toast.propTypes = {
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  id: PropTypes.string,
   message: PropTypes.string.isRequired,
   type: PropTypes.oneOf(['success', 'error', 'info', 'warning']),
   onClose: PropTypes.func.isRequired,
   duration: PropTypes.number,
 };
 
-ToastIcon.propTypes = {
-  type: PropTypes.oneOf(['success', 'error', 'info', 'warning']).isRequired,
-};
+Toast.displayName = 'Toast';
 
-ToastIcon.displayName = 'ToastIcon';
-
-export default memo(Toast);
+export default Toast;

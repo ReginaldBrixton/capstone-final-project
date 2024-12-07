@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 /**
  * Simplified storage for user sessions and data
  */
@@ -10,7 +12,7 @@ export const storage = {
 
 export function addUser(username, passwordHash, email = '', ip = '') {
   const timestamp = Date.now();
-  const randomId = crypto.randomBytes(4).toString('hex');
+  const randomId = Math.random().toString(36).substring(2, 10);
   const userId = `user_${timestamp}_${randomId}`;
   const newUser = {
     id: userId,
