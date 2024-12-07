@@ -75,9 +75,13 @@ export default function RegisterPage() {
             />
           </div>
 
-          <AuthButton type="submit" variant="primary">
+          <AuthButton 
+            type="submit" 
+            variant="primary"
+            icon={UserPlus}
+            iconPosition="right"
+          >
             Create Account
-            <UserPlus size={20} />
           </AuthButton>
 
           <div className={styles.alternateAction}>

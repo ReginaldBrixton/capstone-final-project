@@ -116,9 +116,15 @@ export default function LoginPage() {
 
           {errors.submit && <div className={styles.submitError}>{errors.submit}</div>}
 
-          <AuthButton type="submit" variant="primary" disabled={isLoading}>
+          <AuthButton 
+            type="submit" 
+            variant="primary"
+            isLoading={isLoading}
+            disabled={isLoading}
+            icon={ArrowRight}
+            iconPosition="right"
+          >
             {isLoading ? 'Signing in...' : 'Sign in'}
-            {!isLoading && <ArrowRight size={20} />}
           </AuthButton>
 
           <div className={styles.alternateAction}>
