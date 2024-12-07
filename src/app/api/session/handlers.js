@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 import { addUser, logoutUser, storage, updateUserActivity } from './storage';
-import { getClientIP } from './utils';
 
 // Handle user registration
 export async function handleRegister({ username, password, email }, ip) {

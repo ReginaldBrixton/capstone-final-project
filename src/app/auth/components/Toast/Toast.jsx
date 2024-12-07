@@ -40,10 +40,13 @@ const Toast = ({ message, type = 'info', onClose, duration = 5000 }) => {
 
   useEffect(() => {
     if (duration && progressRef.current) {
-      const currentRef = progressRef.current;
-      currentRef.addEventListener('animationend', handleClose);
+      // Store ref value in a variable to avoid closure issues
+      const progressElement = progressRef.current;
+      progressElement.addEventListener('animationend', handleClose);
+
       return () => {
-        currentRef.removeEventListener('animationend', handleClose);
+        // Use stored variable in cleanup
+        progressElement.removeEventListener('animationend', handleClose);
       };
     }
   }, [duration, handleClose]);
