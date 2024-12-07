@@ -2,8 +2,8 @@
 
 import React, { createContext, useCallback, useContext, useState } from 'react';
 
-import styles from './AuthComponents.module.scss';
 import Toast from './Toast';
+import styles from './Toast.module.scss';
 
 const ToastContext = createContext(null);
 

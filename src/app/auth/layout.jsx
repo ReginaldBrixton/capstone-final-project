@@ -1,7 +1,7 @@
 import React from 'react';
 
 import styles from './auth.module.scss';
-import { ToastProvider } from './components/ToastProvider';
+import { ToastProvider } from './components/Toast/ToastProvider';
 
 export default function AuthLayout({ children }) {
   return (

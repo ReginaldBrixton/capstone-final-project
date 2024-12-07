@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { ArrowRight, Lock, Mail } from 'lucide-react';
 
 import styles from '../auth.module.scss';
-import AuthButton from '../components/AuthButton';
-import InputField from '../components/InputField';
-import { useToast } from '../components/ToastProvider';
+import { AuthButton, InputField } from '../components';
+import { useToast } from '../components/Toast/ToastProvider';
 import { validateEmail, validatePassword } from '../utils/validation';
 
 export default function LoginPage() {

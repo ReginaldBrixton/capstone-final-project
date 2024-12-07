@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import styles from './AuthComponents.module.scss';
+import styles from './Input.module.scss';
 
 const InputField = ({
   icon: Icon,

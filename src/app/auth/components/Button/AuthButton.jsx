@@ -1,6 +1,6 @@
 import React from 'react';
 
-import styles from './AuthComponents.module.scss';
+import styles from './Button.module.scss';
 
 const AuthButton = ({
   children,
