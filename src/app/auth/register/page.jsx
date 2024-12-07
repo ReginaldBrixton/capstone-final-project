@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Lock, Mail, User, UserPlus } from 'lucide-react';
 
-import AuthButton from '@/components/auth/AuthButton';
-import InputField from '@/components/auth/InputField';
 import styles from '../auth.module.scss';
+import AuthButton from '../components/AuthButton';
+import InputField from '../components/InputField';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

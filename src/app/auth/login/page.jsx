@@ -4,19 +4,59 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Lock, Mail } from 'lucide-react';
 
-import AuthButton from '@/components/auth/AuthButton';
-import InputField from '@/components/auth/InputField';
 import styles from '../auth.module.scss';
+import AuthButton from '../components/AuthButton';
+import InputField from '../components/InputField';
+import { useToast } from '../components/ToastProvider';
+import { validateEmail, validatePassword } from '../utils/validation';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const { addToast } = useToast();
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+    };
+    setErrors(newErrors);
+    return !Object.values(newErrors).some((error) => error);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
+    console.log('Validating form data...', formData);
+
+    if (!validateForm()) {
+      console.log('Form validation failed:', errors);
+      addToast('Please fix the errors in the form.', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('Attempting login with:', {
+        email: formData.email,
+        passwordLength: formData.password.length,
+      });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      console.log('Login successful!');
+      addToast('Successfully logged in!', 'success');
+      // Handle successful login here
+    } catch (error) {
+      console.error('Login failed:', error);
+      addToast('Login failed. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -24,6 +64,12 @@ export default function LoginPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+    // Clear error when user starts typing
+    setErrors((prev) => ({
+      ...prev,
+      [name]: '',
+      submit: '',
     }));
   };
 
@@ -44,6 +90,7 @@ export default function LoginPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Email address"
+              error={errors.email}
             />
 
             <InputField
@@ -53,6 +100,7 @@ export default function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Password"
+              error={errors.password}
             />
           </div>
 
@@ -67,9 +115,11 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <AuthButton type="submit" variant="primary">
-            Sign in
-            <ArrowRight size={20} />
+          {errors.submit && <div className={styles.submitError}>{errors.submit}</div>}
+
+          <AuthButton type="submit" variant="primary" disabled={isLoading}>
+            {isLoading ? 'Signing in...' : 'Sign in'}
+            {!isLoading && <ArrowRight size={20} />}
           </AuthButton>
 
           <div className={styles.alternateAction}>
