@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
-export default function StudentRootPage() {
-  redirect('/home');
+export default async function StudentRootPage() {
+  return redirect('/home');
 }
