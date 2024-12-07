@@ -8,15 +8,6 @@ import styles from './Forget-password.module.scss';
 export default function ForgotPasswordPage() {
   const containerRef = useRef(null);
 
-  //   useEffect(() => {
-  //     gsap.from(containerRef.current, {
-  //       y: 20,
-  //       opacity: 0,
-  //       duration: 0.8,
-  //       ease: 'power3.out'
-  //     })
-  //    }, [])
-
   return (
     <div className={styles.container}>
       <div ref={containerRef} className={styles.formContainer}>
