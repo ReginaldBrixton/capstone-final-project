@@ -76,3 +76,29 @@ export async function handleCheckStatus({ username }) {
     location: user.lastLocation,
   });
 }
+
+// Add these new handler functions
+
+export async function handleListSessions() {
+  return NextResponse.json({
+    users: storage.users,
+  });
+}
+
+export async function handleDeleteSession({ username }) {
+  if (storage.users.has(username)) {
+    logoutUser(username);
+    storage.users.delete(username);
+    return NextResponse.json({ message: 'Session deleted successfully' });
+  }
+  return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+}
+
+// Add this new handler function
+export async function handleGetStorageData() {
+  return NextResponse.json({
+    users: Object.fromEntries(storage.users),
+    userEmails: Object.fromEntries(storage.userEmails),
+    sessions: Object.fromEntries(storage.sessions),
+  });
+}

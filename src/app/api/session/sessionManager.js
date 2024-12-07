@@ -1,4 +1,4 @@
-import { clearAllUserSessions, clearEverything, storage } from './storage';
+import { clearAllUserSessions, clearEverything } from './storage';
 
 export function clearAllSessions() {
   clearAllUserSessions();

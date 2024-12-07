@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 
-import { handleCheckStatus, handleLogin, handleLogout, handleRegister } from './handlers';
+import {
+  handleCheckStatus,
+  handleDeleteSession,
+  handleGetStorageData,
+  handleListSessions,
+  handleLogin,
+  handleLogout,
+  handleRegister,
+} from './handlers';
 import { clearAll, clearAllSessions } from './sessionManager';
 import { getClientIP } from './utils';
 
@@ -22,6 +30,12 @@ export async function POST(request) {
         return NextResponse.json(clearAllSessions());
       case 'clearAll':
         return NextResponse.json(clearAll());
+      case 'listSessions':
+        return handleListSessions();
+      case 'deleteSession':
+        return handleDeleteSession(data);
+      case 'getStorageData':
+        return handleGetStorageData();
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
