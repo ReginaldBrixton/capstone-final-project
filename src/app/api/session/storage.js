@@ -9,7 +9,9 @@ export const storage = {
 };
 
 export function addUser(username, passwordHash, email = '', ip = '') {
-  const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const timestamp = Date.now();
+  const randomId = crypto.randomBytes(4).toString('hex');
+  const userId = `user_${timestamp}_${randomId}`;
   const newUser = {
     id: userId,
     username,

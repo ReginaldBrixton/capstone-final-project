@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 const TestPage = () => {
+  const [mounted, setMounted] = useState(false);
   const [authState, setAuthState] = useState({
     isLoggedIn: false,
     token: '',
@@ -16,8 +17,15 @@ const TestPage = () => {
     password: '',
   });
 
-  // Check login status periodically
+  // Add useEffect to handle client-side mounting
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Check login status periodically only after mounting
+  useEffect(() => {
+    if (!mounted) return;
+
     if (authState.token) {
       const checkStatus = async () => {
         try {
@@ -45,7 +53,12 @@ const TestPage = () => {
       const interval = setInterval(checkStatus, 5000);
       return () => clearInterval(interval);
     }
-  }, [authState.token]);
+  }, [authState.token, mounted]);
+
+  // If not mounted yet, return null or a loading state
+  if (!mounted) {
+    return null;
+  }
 
   // Handle form submission (login or register)
   const handleSubmit = async (e) => {
