@@ -25,7 +25,7 @@ ToastIcon.propTypes = {
   type: PropTypes.oneOf(['success', 'error', 'info', 'warning']).isRequired,
 };
 
-const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
+const Toast = ({ message, type = 'info', onClose, duration = 5000 }) => {
   const [isExiting, setIsExiting] = useState(false);
   const [shouldRender, setShouldRender] = useState(true);
   const progressRef = useRef(null);
@@ -78,7 +78,6 @@ const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
 };
 
 Toast.propTypes = {
-  id: PropTypes.string,
   message: PropTypes.string.isRequired,
   type: PropTypes.oneOf(['success', 'error', 'info', 'warning']),
   onClose: PropTypes.func.isRequired,
