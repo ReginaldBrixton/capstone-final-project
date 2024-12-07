@@ -14,7 +14,9 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.1",
     "@reduxjs/toolkit": "^2.4.0",
+    "gsap": "^3.12.5",
     "ioredis": "^5.4.1",
     "lucide-react": "^0.468.0",
     "next": "15.0.3",
