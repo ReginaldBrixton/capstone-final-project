@@ -1,4 +1,5 @@
 export const authRoutes = {
+  auth: '/auth/login', // Redirect /auth to /auth/login
   login: '/auth/login',
   register: '/auth/register',
   forgotPassword: '/auth/forgot-password',
