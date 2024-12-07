@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Lock, Mail, User, UserPlus } from 'lucide-react';
 
+import AuthButton from '@/components/auth/AuthButton';
+import InputField from '@/components/auth/InputField';
 import styles from '../auth.module.scss';
 
 export default function RegisterPage() {
@@ -16,7 +18,6 @@ export default function RegisterPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle registration logic here
     console.log('Register attempt:', formData);
   };
 
@@ -30,81 +31,66 @@ export default function RegisterPage() {
 
   return (
     <div className={styles.authContainer}>
-      <div className={styles.header}>
-        <h2>Create your account</h2>
-        <p>Join us today and start your journey</p>
-      </div>
+      <div className={styles.authCard}>
+        <div className={styles.header}>
+          <h2>Create Account</h2>
+          <p>Join us today and start your journey</p>
+        </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.inputGroup}>
-          <div className={styles.inputWrapper}>
-            <div className={styles.icon}>
-              <User />
-            </div>
-            <input
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <InputField
+              icon={User}
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              required
               placeholder="Full name"
             />
-          </div>
 
-          <div className={styles.inputWrapper}>
-            <div className={styles.icon}>
-              <Mail />
-            </div>
-            <input
+            <InputField
+              icon={Mail}
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
               placeholder="Email address"
             />
-          </div>
 
-          <div className={styles.inputWrapper}>
-            <div className={styles.icon}>
-              <Lock />
-            </div>
-            <input
+            <InputField
+              icon={Lock}
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              required
               placeholder="Password"
             />
-          </div>
 
-          <div className={styles.inputWrapper}>
-            <div className={styles.icon}>
-              <Lock />
-            </div>
-            <input
+            <InputField
+              icon={Lock}
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              required
               placeholder="Confirm password"
             />
           </div>
-        </div>
 
-        <button type="submit" className={styles.submitButton}>
-          Create Account
-          <UserPlus />
-        </button>
+          <AuthButton type="submit" variant="primary">
+            Create Account
+            <UserPlus size={20} />
+          </AuthButton>
 
-        <div className={styles.alternateAction}>
-          <p>
-            Already have an account? <Link href="/auth/login">Sign in</Link>
-          </p>
-        </div>
-      </form>
+          <div className={styles.alternateAction}>
+            <p>
+              Already have an account?{' '}
+              <Link href="/auth/login" className={styles.authLink}>
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

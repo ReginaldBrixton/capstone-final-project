@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Lock, User } from 'lucide-react';
+import { ArrowRight, Lock, Mail } from 'lucide-react';
 
+import AuthButton from '@/components/auth/AuthButton';
+import InputField from '@/components/auth/InputField';
 import styles from '../auth.module.scss';
 
 export default function LoginPage() {
@@ -14,7 +16,6 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic here
     console.log('Login attempt:', formData);
   };
 
@@ -28,64 +29,59 @@ export default function LoginPage() {
 
   return (
     <div className={styles.authContainer}>
-      <div className={styles.header}>
-        <h2>Welcome back</h2>
-        <p>Please sign in to your account</p>
-      </div>
+      <div className={styles.authCard}>
+        <div className={styles.header}>
+          <h2>Welcome back</h2>
+          <p>Please sign in to your account</p>
+        </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.inputGroup}>
-          <div className={styles.inputWrapper}>
-            <div className={styles.icon}>
-              <User />
-            </div>
-            <input
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <InputField
+              icon={Mail}
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
               placeholder="Email address"
             />
-          </div>
 
-          <div className={styles.inputWrapper}>
-            <div className={styles.icon}>
-              <Lock />
-            </div>
-            <input
+            <InputField
+              icon={Lock}
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              required
               placeholder="Password"
             />
           </div>
-        </div>
 
-        <div className={styles.rememberMe}>
-          <div className={styles.checkbox}>
-            <input id="remember-me" name="remember-me" type="checkbox" />
-            <label htmlFor="remember-me">Remember me</label>
+          <div className={styles.rememberMe}>
+            <div className={styles.checkbox}>
+              <input id="remember-me" name="remember-me" type="checkbox" />
+              <label htmlFor="remember-me">Remember me</label>
+            </div>
+
+            <Link href="/auth/forgot-password" className={styles.forgotPassword}>
+              Forgot password?
+            </Link>
           </div>
 
-          <div className={styles.forgotPassword}>
-            <a href="#">Forgot your password?</a>
+          <AuthButton type="submit" variant="primary">
+            Sign in
+            <ArrowRight size={20} />
+          </AuthButton>
+
+          <div className={styles.alternateAction}>
+            <p>
+              Don't have an account?{' '}
+              <Link href="/auth/register" className={styles.authLink}>
+                Sign up
+              </Link>
+            </p>
           </div>
-        </div>
-
-        <button type="submit" className={styles.submitButton}>
-          Sign in
-          <ArrowRight />
-        </button>
-
-        <div className={styles.alternateAction}>
-          <p>
-            Don't have an account? <Link href="/auth/register">Sign up</Link>
-          </p>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
