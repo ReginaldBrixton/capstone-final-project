@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import CreateSession from './CreateSession';
-import SessionDisplay from './SessionDisplay';
+import { CreateSession, SessionDisplay } from '../components';
 
 const SessionManager = () => {
   const [storageData, setStorageData] = useState({

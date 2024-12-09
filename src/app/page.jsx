@@ -12,7 +12,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className="text-center max-w-2xl mx-auto">
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
             A modern web application built with Next.js and React
           </p>
 

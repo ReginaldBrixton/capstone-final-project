@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import SessionManager from '@/components/SessionManager';
+import { SessionManager } from './components';
 
 const TestPage = () => {
   const [mounted, setMounted] = useState(false);
