@@ -1,0 +1,164 @@
+// Variables
+$primary-color: #2563eb;
+$secondary-color: #64748b;
+$background-color: #f8fafc;
+$card-background: #ffffff;
+$success-color: #22c55e;
+$border-radius: 8px;
+$box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+.coursesPage {
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    color: #1e293b;
+  }
+}
+
+.filters {
+  .select {
+    padding: 0.5rem 1rem;
+    border-radius: $border-radius;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    color: $secondary-color;
+    font-size: 0.875rem;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+    }
+  }
+}
+
+.courseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.courseCard {
+  background-color: $card-background;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $box-shadow;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.courseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.courseCode {
+  font-weight: 600;
+  color: $primary-color;
+  font-size: 0.875rem;
+}
+
+.status {
+  background-color: rgba($success-color, 0.1);
+  color: $success-color;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.courseName {
+  font-size: 1.25rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.instructor,
+.schedule {
+  color: $secondary-color;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+
+  span {
+    font-weight: 500;
+    color: #475569;
+  }
+}
+
+.progressWrapper {
+  margin: 1rem 0;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  color: $secondary-color;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.progressBar {
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: $primary-color;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.viewButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: darken($primary-color, 5%);
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .coursesPage {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .courseGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .coursesPage {
+    padding: 1rem 0.5rem;
+  }
+}

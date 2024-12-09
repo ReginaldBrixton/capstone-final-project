@@ -1,0 +1,136 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  from,
+  to {
+    border-color: var(--text-primary);
+  }
+  50% {
+    border-color: transparent;
+  }
+}
+
+@keyframes typeAndDelete {
+  0% {
+    width: 0;
+  }
+  20% {
+    width: 100%;
+  }
+  40% {
+    width: 100%;
+  }
+  60% {
+    width: 0;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+.header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards;
+
+  .title-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .header-title-container {
+    display: flex;
+    justify-content: center;
+    min-height: 3.5rem;
+
+    @media (min-width: 640px) {
+      min-height: 4rem;
+    }
+  }
+
+  .typing-container {
+    display: inline-block;
+    position: relative;
+    padding: 0 4px;
+  }
+
+  .title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    line-height: 1.2;
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    border-right: 3px solid var(--text-primary);
+    margin: 0 auto;
+    overflow: hidden;
+    width: 0;
+    animation:
+      typeAndDelete 8s steps(40) infinite,
+      blink 0.75s step-end infinite;
+
+    @media (min-width: 640px) {
+      font-size: 2.5rem;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--text-primary), transparent);
+      transform: scaleX(0);
+      animation: underline 2s ease-in-out forwards;
+      animation-delay: 2s;
+    }
+  }
+
+  .subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+    animation-delay: 4s;
+
+    @media (min-width: 640px) {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+@keyframes underline {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+:root {
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+
+  [data-theme='dark'] {
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+  }
+}
