@@ -1,0 +1,137 @@
+// Variables
+$primary-color: #2563eb;
+$secondary-color: #64748b;
+$background-color: #f8fafc;
+$card-background: #ffffff;
+$spacing-unit: 1rem;
+$border-radius: 8px;
+$box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin card {
+  background-color: $card-background;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  padding: $spacing-unit;
+}
+
+@mixin responsive-grid {
+  display: grid;
+  gap: $spacing-unit;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Main container
+.studentDashboard {
+  padding: $spacing-unit;
+  background-color: $background-color;
+  min-height: 100vh;
+
+  h1 {
+    color: $primary-color;
+    margin-bottom: $spacing-unit * 2;
+  }
+}
+
+// Grid layout
+.dashboardGrid {
+  @include responsive-grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+// Components
+.profileSection {
+  @include card;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: $spacing-unit;
+
+  .profileInfo {
+    flex: 1;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: $secondary-color;
+  }
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: $spacing-unit;
+
+  .statCard {
+    @include card;
+    text-align: center;
+
+    .statValue {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: $primary-color;
+    }
+
+    .statLabel {
+      color: $secondary-color;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.section {
+  @include card;
+
+  h2 {
+    color: $primary-color;
+    margin-bottom: $spacing-unit;
+  }
+}
+
+.courseList, .assignmentList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-unit;
+
+  .item {
+    padding: $spacing-unit;
+    border-radius: $border-radius;
+    border: 1px solid rgba($secondary-color, 0.2);
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    .title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .meta {
+      font-size: 0.875rem;
+      color: $secondary-color;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .studentDashboard {
+    padding: $spacing-unit * 0.5;
+  }
+
+  .profileSection {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
